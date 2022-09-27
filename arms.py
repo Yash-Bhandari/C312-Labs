@@ -1,6 +1,9 @@
 from math import cos, sin, pi, acos, asin, atan2
+import sys
 
-class RoboticArm:
+class RoboticArm2DoFSim:
+	"""Provides forward and reverse kinematics for a 2 DoF robotic arm"""
+
 	def __init__(self, j1, j2) -> None:
 		"""
 		Initialize the arm with the lengths of the joints
@@ -12,10 +15,10 @@ class RoboticArm:
 		self.j2 = j2
 
 	def location_with_angles(self, theta1, theta2):
-		"""What location is reached with the given angles"""
+		"""What location is reached with the given angles (degrees)"""
 		x_1 = self.j1 * cos(theta1)
 		y_1 = self.j1 * sin(theta1)
-		print("x_1: {:.3f}, y_1: {:.3f}".format(x_1, y_1))
+		print("x_1: {:.3f}, y_1: {:.3f}".format(x_1, y_1), file=sys.stderr)
 		x_2 = x_1 + self.j2 * cos(theta1 + theta2)
 		y_2 = y_1 + self.j2 * sin(theta1 + theta2)
 		print("x_2: {:.3f}, y_2: {:.3f}".format(x_2, y_2))
@@ -29,6 +32,6 @@ class RoboticArm:
 		return theta1, theta2
 
 if __name__ == "__main__":
-	arm = RoboticArm(1, 1)
+	arm = RoboticArm2DoFSim(1, 1)
 	arm.location_with_angles(0, pi)
 	arm.angles_for_location(1, 0.5)
