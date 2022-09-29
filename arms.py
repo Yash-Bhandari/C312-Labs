@@ -18,10 +18,10 @@ class RoboticArm2DoFSim:
 		"""What location is reached with the given angles (degrees)"""
 		x_1 = self.j1 * cos(theta1)
 		y_1 = self.j1 * sin(theta1)
-		print("x_1: {:.3f}, y_1: {:.3f}".format(x_1, y_1), file=sys.stderr)
+		# print("x_1: {:.3f}, y_1: {:.3f}".format(x_1, y_1), file=sys.stderr)
 		x_2 = x_1 + self.j2 * cos(theta1 + theta2)
 		y_2 = y_1 + self.j2 * sin(theta1 + theta2)
-		print("x_2: {:.3f}, y_2: {:.3f}".format(x_2, y_2))
+		# print("x_2: {:.3f}, y_2: {:.3f}".format(x_2, y_2))
 		return x_2, y_2
 
 	def angles_for_location(self, x, y):

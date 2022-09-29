@@ -22,13 +22,16 @@ class RoboticArm:
 		self.sim = RoboticArm2DoFSim(j1, j2)
 		self.joint1 = LargeMotor(joint1_port)
 		self.joint2 = LargeMotor(joint2_port)
+		self.reset_joints()
+
+	def reset_joints(self):
 		self.joint1.reset()
 		self.joint2.reset()
 
 	def set_angles(self, theta1, theta2):
 		"""Set the angles of the joints in degrees"""
-		self.joint1.on_to_position(5, theta1)
-		self.joint2.on_to_position(5, theta2)
+		self.joint1.on_to_position(5, theta1, brake=False)
+		self.joint2.on_to_position(5, theta2, brake=False)
 
 		theta1 = theta1 * 180 / pi
 		theta2 = theta2 * 180 / pi
@@ -41,7 +44,7 @@ class RoboticArm:
 	def print_status(self):
 		print("Joint 1: {} Joint 2: {}".format(self.joint1.position, self.joint2.position), file=sys.stderr)
 		x, y = self.get_position()
-		print("{:.4f}, {:.4f}".format(x, y), file=sys.stderr)
+		print("x={:.2f}cm, y={:.2f}cm".format(100*x, 100*y), file=sys.stderr)
 
 # q2 part a
 def repeated_angle_test():
@@ -49,12 +52,13 @@ def repeated_angle_test():
 	button = Button()
 
 	def go_to_angle(a1, a2):
+		arm.reset_joints()
 		arm.set_angles(a1, a2)
-		print(arm.get_position(), file=sys.stderr)
+		arm.print_status()
 		button.wait_for_bump('enter')
 
-	theta1 = 30
-	theta2 = 50
+	theta1 = 100
+	theta2 = -120
 	for trial in range(5):
 		print('Trial {}'.format(trial), file=sys.stderr)
 		go_to_angle(theta1, theta2)
