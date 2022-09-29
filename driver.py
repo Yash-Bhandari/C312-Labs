@@ -63,9 +63,24 @@ def repeated_angle_test():
 		print('Trial {}'.format(trial), file=sys.stderr)
 		go_to_angle(theta1, theta2)
 
+def measure_distance():
+	arm = RoboticArm()
+	button = Button()
+
+	for trial in range(5):
+		print('Trial {}'.format(trial), file=sys.stderr)
+		button.wait_for_bump('enter')
+		x0, y0 = arm.get_position()
+		arm.print_status()
+		button.wait_for_bump('enter')
+		x1, y1 = arm.get_position()
+		arm.print_status()
+		distance = ((x1-x0)**2 + (y1-y0)**2)**0.5
+		print('Distance: {:.2f}cm'.format(distance*100), file=sys.stderr)
 
 if __name__ == "__main__":
-	repeated_angle_test()
+	# repeated_angle_test()
+	measure_distance()
 
 	# test moving
 	# arm.print_status()
