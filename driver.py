@@ -7,8 +7,12 @@ from time import sleep
 from ev3dev2.button import Button
 import sys
 
+
+JOINT1_LENGTH = 0.117
+JOINT2_LENGTH = 0.096
+
 class RoboticArm:
-	def __init__(self, j1, j2, joint1_port = OUTPUT_A, joint2_port= OUTPUT_B) -> None:
+	def __init__(self, j1 = JOINT1_LENGTH, j2 = JOINT2_LENGTH, joint1_port = OUTPUT_A, joint2_port= OUTPUT_B) -> None:
 		"""
 		Args: 
 			j1 (float): length of first joint
@@ -39,20 +43,25 @@ class RoboticArm:
 		x, y = self.get_position()
 		print("{:.4f}, {:.4f}".format(x, y), file=sys.stderr)
 
-
-if __name__ == "__main__":
-	j1_length = 0.117 
-	arm = RoboticArm(0.117, 0.096)
+# q2 part a
+def repeated_angle_test():
+	arm = RoboticArm()
 	button = Button()
-	sleep(1)
 
 	def go_to_angle(a1, a2):
 		arm.set_angles(a1, a2)
 		print(arm.get_position(), file=sys.stderr)
 		button.wait_for_bump('enter')
-	go_to_angle(90, 90)
-	go_to_angle(135, -90)
-	go_to_angle(0, 0)
+
+	theta1 = 30
+	theta2 = 50
+	for trial in range(5):
+		print('Trial {}'.format(trial), file=sys.stderr)
+		go_to_angle(theta1, theta2)
+
+
+if __name__ == "__main__":
+	repeated_angle_test()
 
 	# test moving
 	# arm.print_status()
