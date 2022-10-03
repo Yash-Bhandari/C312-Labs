@@ -4,6 +4,90 @@ l = [1, 1] # lengths of joints [l1, l2] (meters)
 h = 0.1 # step size 
 THETA = [0, 0] # joint angles [theta1, theta2] (degrees)
 
+class Matrix:
+    """Provides matrix operations for inverse kinematics"""
+    def __init__(self, n, m):
+        """Initialize nxm matrix with zeros"""
+        self.row_size = n
+        self.col_size = m 
+        self.matrix = self.get_matrix(n, m)
+
+    def get_matrix(self, n, m):
+        """Generate nxm matrix"""
+        matrix = [[0 for j in range(m)] for i in range(n)]
+        return matrix
+
+    def get_readable_matrix_string(self, matrix):
+        """separates rows by newline characters"""
+        strings = []
+        for row in matrix:
+            strings.append(str(row))
+        return '\n'.join(strings)  
+
+    def __str__(self):
+        """Method called when when print() or str() is invoked on an object"""
+        return self.get_readable_matrix_string(self.matrix)
+    
+    def __len__(self):
+        """Method called when when len() is invoked on an object"""
+        return len(self.matrix[0])
+
+    def __getitem__(self, i):
+        return self.matrix[i]
+
+    def getElement(self, i, j):
+        """Returns matrix element in row i column j"""
+        return self.matrix[i][j]
+    
+    def setElement(self, i, j, element):
+        """Sets matrix elements in row i column j with value = element"""
+        self.matrix[i][j] = element
+    
+    def transpose(self, matrix):
+        """Returns the transpose of the matrix"""
+        return [list(i) for i in zip(*matrix)]
+    
+    def multiply(self, other):
+        """Implementation of matrix multiply"""
+        result = [[0 for j in range(len(other[0]))] for i in range(len(self.matrix))]
+        for i in range(len(self.matrix)):
+            for j in range(len(other[0])):
+                for k in range(len(other)):
+                    print(i,j,k)
+                    result[i][j] += self.matrix[i][k] * other[k][j]
+        return result
+    
+    def add(self, other):
+        """Add two matrices"""
+        result = [[0 for j in range(len(self.matrix))] for i in range(len(self.matrix[0]))]
+        for i in range(len(self.matrix)):
+            for j in range(len(self.matrix[0])):
+                result[i][j] = self.matrix[i][j] + other[i][j]
+
+    def TwoByTwoInverse(self):
+        pass
+
+    def __mul__(self, other):
+        """Method called when when * is invoked between two Matrix objects, or between a matrix and a scalar"""
+        if isinstance(other, Matrix):
+            return self.get_readable_matrix_string(self.multiply(other))
+        # scalar multiplcation 
+        return self.get_readable_matrix_string([[num*other for num in row] for row in self.matrix])
+
+    def __add__(self, other):
+        return self.get_readable_matrix_string(self.multiply(other))
+        
+
+
+m1 = Matrix(2, 2)
+m2 = Matrix(2, 2)
+m2.setElement(0,0,5)
+m2.setElement(1,1,5)
+m1.setElement(0,0,2)
+m1.setElement(1,1,2)
+
+print(m1*m2)
+
 def mat_sub(A,B):
     """Subtracts two matrices (A-B)"""
     if type(A[0]) == float:
@@ -14,6 +98,7 @@ def mat_sub(A,B):
             for j in range(len(A[0])):
                 A[i][j] = A[i][j] - B[i][j]
     return A
+
 
 
 def vec_norm(A):
@@ -57,22 +142,21 @@ def inverse_kinematics(l, theta, pos, n, mode):
         n (int): max number of iterations on newton/broden
         mode (str): specifies the method 
     """
-    threshold = 0.01
+    THRESHOLD = 0.01
     new_pos, B = eval_robot(l, theta)
     res = mat_sub(new_pos, pos)
     i = 0
 
-    print(new_pos)
 
     if mode == 'newton': 
-        while (i <= n and vec_norm(res) > threshold):
+        while (i <= n and vec_norm(res) > THRESHOLD):
             new_pos, J = eval_robot(l, theta)
             # s = -J\(new_pos-pos)
             # theta = theta + s
             res = new_pos - pos
             i += 1
     elif mode == 'broyden':
-        while (i <= n and vec_norm(res) > threshold):
+        while (i <= n and vec_norm(res) > THRESHOLD):
             f = mat_sub(new_pos, pos)
             # s = -B\f
             # theta = theta + s
