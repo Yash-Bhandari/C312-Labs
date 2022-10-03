@@ -1,5 +1,3 @@
-pos = [1,1]
+import math 
 
-new = [5,4]
-
-print(new-pos)
+print(math.cos(math.pi))
