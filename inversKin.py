@@ -49,33 +49,39 @@ class Matrix:
     
     def multiply(self, other):
         """Implementation of matrix multiply"""
-        result = [[0 for j in range(len(other[0]))] for i in range(len(self.matrix))]
+        res = [[0 for j in range(len(other[0]))] for i in range(len(self.matrix))]
         for i in range(len(self.matrix)):
             for j in range(len(other[0])):
                 for k in range(len(other)):
-                    print(i,j,k)
-                    result[i][j] += self.matrix[i][k] * other[k][j]
-        return result
+                    res[i][j] += self.matrix[i][k] * other[k][j]
+        return res
     
     def add(self, other):
         """Add two matrices"""
-        result = [[0 for j in range(len(self.matrix))] for i in range(len(self.matrix[0]))]
+        res = [[0 for j in range(len(self.matrix))] for i in range(len(self.matrix[0]))]
         for i in range(len(self.matrix)):
             for j in range(len(self.matrix[0])):
-                result[i][j] = self.matrix[i][j] + other[i][j]
+                res[i][j] = self.matrix[i][j] + other[i][j]
+        return res
+
 
     def TwoByTwoInverse(self):
-        pass
+        scalar = 1/(self.getElement(0,0)*self.getElement(1,1)-self.getElement(0,1)*self.getElement(1,0))
+        return self.multiply(scalar)
 
+    def pseudoinverse(self):
+        pass
+    
     def __mul__(self, other):
         """Method called when when * is invoked between two Matrix objects, or between a matrix and a scalar"""
         if isinstance(other, Matrix):
-            return self.get_readable_matrix_string(self.multiply(other))
+            return self.multiply(other)
         # scalar multiplcation 
-        return self.get_readable_matrix_string([[num*other for num in row] for row in self.matrix])
+        return [[num*other for num in row] for row in self.matrix]
 
     def __add__(self, other):
-        return self.get_readable_matrix_string(self.multiply(other))
+        """Method called when when + is invoked between two matrix objects"""
+        return self.add(other)
         
 
 
@@ -84,21 +90,12 @@ m2 = Matrix(2, 2)
 m2.setElement(0,0,5)
 m2.setElement(1,1,5)
 m1.setElement(0,0,2)
-m1.setElement(1,1,2)
+m1.setElement(1,1,3)
 
-print(m1*m2)
-
-def mat_sub(A,B):
-    """Subtracts two matrices (A-B)"""
-    if type(A[0]) == float:
-        for i in range(len(A)):
-            A[i] = A[i] - B[i]
-    else:
-        for i in range(len(A)):
-            for j in range(len(A[0])):
-                A[i][j] = A[i][j] - B[i][j]
-    return A
-
+m3 = m1*m2
+print(m3)
+m4 = m1.TwoByTwoInverse()
+print(m4)
 
 
 def vec_norm(A):
