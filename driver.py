@@ -93,15 +93,15 @@ def measure_angle():
 	button = Button()
 
 	button.wait_for_bump('enter')
-	p1 = arm.get_position() # point 0, intersection of the two lines
+	p0 = arm.get_position() # point 0, intersection of the two lines
 	arm.print_status()
 	button.wait_for_bump('enter')
-	p2 = arm.get_position() # point 1, first line
+	p1 = arm.get_position() # point 1, first line
 	arm.print_status()
 	button.wait_for_bump('enter')
-	p3 = arm.get_position() # point 2, second line
+	p2 = arm.get_position() # point 2, second line
 	arm.print_status()
-	angle = angle_of_intersecting_lines(p1, p2, p3) * 180 / pi
+	angle = angle_of_intersecting_lines(p0, p1, p2) * 180 / pi
 	print("Angle between lines: {:}".format(angle), file=sys.stderr)
 
 
@@ -131,14 +131,14 @@ def midpoint():
 
 	x_mid = (x0 + x1) / 2
 	y_mid = (y0 + y1) / 2
-	print('Midpoint: ({:.2f}, {:.2f})'.format(x_mid, y_mid), file=sys.stderr)
+	print('Midpoint: ({:.3f}, {:.3f})'.format(x_mid, y_mid), file=sys.stderr)
 	arm.go_to_position(x_mid, y_mid)
 
 
 if __name__ == "__main__":
 	# repeated_angle_test()
-	# measure_angle()
-	midpoint()
+	measure_angle()
+	# midpoint()
 	# arm = RoboticArm()
 	# button = Button()
 	# # test moving

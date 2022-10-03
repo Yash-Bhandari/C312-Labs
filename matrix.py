@@ -24,7 +24,7 @@ class Matrix:
     
     def __len__(self):
         """Method called when when len() is invoked on an object"""
-        return len(self.matrix[0])
+        return len(self.matrix)
 
     def __getitem__(self, i):
         return self.matrix[i]
