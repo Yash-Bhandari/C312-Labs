@@ -92,8 +92,9 @@ def inverse_kinematics(l, theta, pos, n, mode):
         theta[0][0] = alpha_1+alpha_2
         theta[1][0] = alpha_3-180
 
-    return theta
+    return theta[0][0], theta[1][0]
 
-pos, B = eval_robot(l, THETA)
-ret = inverse_kinematics(l, START_THETA, pos, 1, 'newton')
-print(ret, 'fin')
+if __name__ == '__main__':
+    pos, B = eval_robot(l, THETA)
+    ret = inverse_kinematics(l, START_THETA, pos, 1, 'newton')
+    print(ret, 'fin')
