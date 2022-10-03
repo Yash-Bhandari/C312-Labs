@@ -12,8 +12,8 @@ from utils import distance, angle_of_intersecting_lines
 import sys
 
 
-JOINT1_LENGTH = 0.117
-JOINT2_LENGTH = 0.096
+JOINT1_LENGTH = 0.113
+JOINT2_LENGTH = 0.095
 
 class RoboticArm:
 	def __init__(self, j1 = JOINT1_LENGTH, j2 = JOINT2_LENGTH, joint1_port = OUTPUT_A, joint2_port= OUTPUT_B) -> None:
@@ -118,13 +118,30 @@ def go_to_position():
 
 # q3 aii
 def midpoint():
-	pass
+	arm = RoboticArm()
+	button = Button()
+
+	# Let user specify two points
+	button.wait_for_bump('enter')
+	x0, y0 = arm.get_position() 
+	arm.print_status()
+	button.wait_for_bump('enter')
+	x1, y1 = arm.get_position() # point 1, first line
+	arm.print_status()
+
+	x_mid = (x0 + x1) / 2
+	y_mid = (y0 + y1) / 2
+	print('Midpoint: ({:.2f}, {:.2f})'.format(x_mid, y_mid), file=sys.stderr)
+	arm.go_to_position(x_mid, y_mid)
+
 
 if __name__ == "__main__":
 	# repeated_angle_test()
 	# measure_angle()
-
-	# test moving
+	midpoint()
+	# arm = RoboticArm()
+	# button = Button()
+	# # test moving
 	# arm.print_status()
 	# while True:
 	# 	button.wait_for_bump('enter')
