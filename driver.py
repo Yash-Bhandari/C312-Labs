@@ -1,10 +1,14 @@
 #!/usr/bin/env python3
 
+from dis import dis
+from re import A
 from arms import RoboticArm2DoFSim
 from math import pi
+import math
 from ev3dev2.motor import LargeMotor, OUTPUT_A, OUTPUT_B  # type: ignore
 from time import sleep
 from ev3dev2.button import Button
+from utils import distance, angle_of_intersecting_lines
 import sys
 
 
@@ -35,6 +39,14 @@ class RoboticArm:
 		pred_x, pred_y = self.sim.location_with_angles(theta1, theta2)
 		print("Predicted Location: {:.3f}, {:.3f}".format(pred_x, pred_y))
 
+	def go_to_position(self, x, y, method = 'analytical'):
+		"""Move the arm to the given location"""
+		if method == 'analytical':
+			theta1, theta2 = self.sim.angles_for_location(x, y)
+		elif method == 'numerical':
+			theta1, theta2 = 0, 0 # fill in here justin!
+		self.set_angles(theta1 * 180 / pi, theta2 * 180 / pi)
+
 	def get_position(self):
 		return self.sim.location_with_angles(self.joint1.position * pi / 180, self.joint2.position * pi / 180)
 
@@ -60,8 +72,57 @@ def repeated_angle_test():
 		go_to_angle(theta1, theta2)
 
 
+def measure_distance():
+	arm = RoboticArm()
+	button = Button()
+
+	for trial in range(5):
+		print('Trial {}'.format(trial), file=sys.stderr)
+		button.wait_for_bump('enter')
+		x0, y0 = arm.get_position()
+		arm.print_status()
+		button.wait_for_bump('enter')
+		x1, y1 = arm.get_position()
+		arm.print_status()
+		distance = ((x1-x0)**2 + (y1-y0)**2)**0.5
+		print('Distance: {:.2f}cm'.format(distance*100), file=sys.stderr)
+
+# q3 a ii
+def measure_angle():
+	arm = RoboticArm()
+	button = Button()
+
+	button.wait_for_bump('enter')
+	p1 = arm.get_position() # point 0, intersection of the two lines
+	arm.print_status()
+	button.wait_for_bump('enter')
+	p2 = arm.get_position() # point 1, first line
+	arm.print_status()
+	button.wait_for_bump('enter')
+	p3 = arm.get_position() # point 2, second line
+	arm.print_status()
+	angle = angle_of_intersecting_lines(p1, p2, p3) * 180 / pi
+	print("Angle between lines: {:}".format(angle), file=sys.stderr)
+
+
+# q3 part a
+def go_to_position():
+	arm = RoboticArm()
+	button = Button()
+	positions = [(0.15, 0.1), (0.15, -0.1), (0, 0.15)]
+	for x, y in positions:
+		print('Trying to go to ({:.2f}, {:.2f})'.format(x, y), file=sys.stderr)
+		arm.go_to_position(x, y)
+		arm.print_status()
+		button.wait_for_bump('enter')
+
+# q3 aii
+def midpoint():
+	pass
+
 if __name__ == "__main__":
-	repeated_angle_test()
+	# repeated_angle_test()
+	# measure_angle()
 
 	# test moving
 	# arm.print_status()
