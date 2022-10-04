@@ -61,15 +61,9 @@ def inverse_kinematics(l, theta, pos, n, mode):
     if mode == 'newton': 
         while (i <= n and res.vec_norm() > THRESHOLD):
             new_pos, J = eval_robot(l, theta)
-
             J_inv = J.TwoByTwoInverse()*(-1)
-            x = new_pos+pos*(-1)
-            print(J_inv)
-            s = J_inv*x
-            print(theta, 't1')
-            print(s, 's')
+            s = J_inv*(new_pos+pos*(-1))
             theta = theta+s
-            print(theta, 't2')
             res = new_pos+pos*(-1)
             i += 1
 
@@ -94,7 +88,14 @@ def inverse_kinematics(l, theta, pos, n, mode):
 
     return theta[0][0], theta[1][0]
 
+<<<<<<< HEAD:inverseKin.py
+pos, B = eval_robot(l, THETA)
+ret = inverse_kinematics(l, START_THETA, pos, 10, 'newton')
+print(ret, 'fin')
+   
+=======
 if __name__ == '__main__':
     pos, B = eval_robot(l, THETA)
     ret = inverse_kinematics(l, START_THETA, pos, 1, 'newton')
     print(ret, 'fin')
+>>>>>>> edc4f5e70a927b347db576428d020f32f4f1a618:inversKin.py
