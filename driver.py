@@ -10,6 +10,8 @@ from time import sleep
 from ev3dev2.button import Button
 from utils import distance, angle_of_intersecting_lines
 import sys
+from inverseKin import inverse_kinematics
+from matrix import Matrix
 
 
 JOINT1_LENGTH = 0.113
@@ -44,7 +46,17 @@ class RoboticArm:
 		if method == 'analytical':
 			theta1, theta2 = self.sim.angles_for_location(x, y)
 		elif method == 'numerical':
-			theta1, theta2 = 0, 0 # fill in here justin!
+
+			START_THETA = Matrix(2,1)
+			START_THETA[0][0] = self.joint1.position()
+			START_THETA[1][0] = self.joint2.position()
+			l = Matrix(2,1)
+			l[0][0] = JOINT1_LENGTH
+			l[1][0] = JOINT2_LENGTH
+			pos = Matrix(2,1)
+			pos[0][0] = x
+			pos[1][0] = y
+			theta1, theta2 = inverse_kinematics(l, START_THETA, pos, 20, 'newton')
 		self.set_angles(theta1 * 180 / pi, theta2 * 180 / pi)
 
 	def get_position(self):
