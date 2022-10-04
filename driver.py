@@ -71,7 +71,7 @@ def repeated_angle_test():
 		print('Trial {}'.format(trial), file=sys.stderr)
 		go_to_angle(theta1, theta2)
 
-
+# q2 c1
 def measure_distance():
 	arm = RoboticArm()
 	button = Button()
@@ -87,7 +87,7 @@ def measure_distance():
 		distance = ((x1-x0)**2 + (y1-y0)**2)**0.5
 		print('Distance: {:.2f}cm'.format(distance*100), file=sys.stderr)
 
-# q3 a ii
+# q2 cii
 def measure_angle():
 	arm = RoboticArm()
 	button = Button()
@@ -105,7 +105,7 @@ def measure_angle():
 	print("Angle between lines: {:}".format(angle), file=sys.stderr)
 
 
-# q3 part a
+# q3 ai
 def go_to_position():
 	arm = RoboticArm()
 	button = Button()
@@ -136,8 +136,8 @@ def midpoint():
 
 
 if __name__ == "__main__":
-	# repeated_angle_test()
-	measure_angle()
+	repeated_angle_test()
+	# measure_angle()
 	# midpoint()
 	# arm = RoboticArm()
 	# button = Button()
