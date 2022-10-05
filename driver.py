@@ -28,18 +28,23 @@ class RoboticArm:
 		self.sim = RoboticArm2DoFSim(j1, j2)
 		self.joint1 = LargeMotor(joint1_port)
 		self.joint2 = LargeMotor(joint2_port)
+		self.reset()
+
+	def reset(self):
 		self.joint1.reset()
 		self.joint2.reset()
 
 	def set_angles(self, theta1, theta2):
 		"""Set the angles of the joints in degrees"""
+		if theta2 > 180:
+			theta2 = theta2 - 360
 		self.joint1.on_to_position(5, theta1, brake=False)
 		self.joint2.on_to_position(5, theta2, brake=False)
 
-		theta1 = theta1 * 180 / pi
-		theta2 = theta2 * 180 / pi
+		theta1 = theta1 / 180 * pi
+		theta2 = theta2 / 180 * pi
 		pred_x, pred_y = self.sim.location_with_angles(theta1, theta2)
-		print("Predicted Location: {:.3f}, {:.3f}".format(pred_x, pred_y))
+		print("Predicted Location: {:.3f}, {:.3f}".format(pred_x, pred_y), file=sys.stderr)
 
 	def go_to_position(self, x, y, method = 'analytical'):
 		"""Move the arm to the given location"""
@@ -63,8 +68,8 @@ class RoboticArm:
 				pos[0][0] = start_x + delta_x * step / 3
 				pos[1][0] = start_y + delta_y * step / 3
 				theta1, theta2 = inverse_kinematics(l, start_angles, pos, 20, 'newton')
-				theta1 = theta1 * 180 / pi
-				theta2 = theta2 * 180 / pi
+				theta1 = (theta1 * 180 / pi ) % 360
+				theta2 = (theta2 * 180 / pi ) % 360
 				self.set_angles(theta1, theta2)
 			print('Setting joints to theta1: {}, theta2: {}'.format(theta1, theta2), file=sys.stderr)
 
@@ -132,7 +137,7 @@ def measure_angle():
 def go_to_position():
 	arm = RoboticArm()
 	button = Button()
-	positions = [(0.15, 0.1), (0.15, 0), (-0.05, 0.15)]
+	positions = [(0.05, 0.15), (0.1, 0.1)]
 	arm.print_status()
 	print('Press the button to start!', file=sys.stderr)
 	button.wait_for_bump('enter')
@@ -141,6 +146,7 @@ def go_to_position():
 		arm.go_to_position(x, y, method='numerical')
 		arm.print_status()
 		button.wait_for_bump('enter')
+		arm.reset()
 
 # q3 aii
 def midpoint():
@@ -166,8 +172,8 @@ if __name__ == "__main__":
 	# repeated_angle_test()
 	# measure_distance()
 	# measure_angle()
-	# go_to_position()
-	midpoint()
+	go_to_position()
+	# midpoint()
 
 	# arm = RoboticArm()
 	# button = Button()

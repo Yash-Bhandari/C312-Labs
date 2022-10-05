@@ -1,5 +1,6 @@
 import math
 from matrix import Matrix
+import sys
 
 # == lengths of joints [l1, l2] (meters) == 
 l = Matrix(2,1)
@@ -65,8 +66,8 @@ def inverse_kinematics(l, theta, pos, n, mode):
         while (i <= n and res.vec_norm() > THRESHOLD):
             new_pos, J = eval_robot(l, theta)
             if J.det() == 0:
-                print("Jacobian is singular")
-                theta = theta = theta + jiggle
+                print("Jacobian is singular", file=sys.stderr)
+                theta = theta + jiggle
                 continue
             J_inv = J.TwoByTwoInverse()*(-1)
             s = J_inv*(new_pos+pos*(-1))
