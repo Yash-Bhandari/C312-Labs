@@ -76,7 +76,7 @@ class Matrix:
 
     def TwoByTwoInverse(self):
         """Finds inverse of a 2x2 matrix"""
-        scalar = 1/(self.matrix[0][0]*self.matrix[1][1]-self.matrix[0][1]*self.matrix[1][0])
+        scalar = 1/ self.det()
         res = Matrix(2,2)
         res.setElement(0, 0, self.matrix[1][1])
         res.setElement(0, 1, -1*self.matrix[0][1])
@@ -86,6 +86,9 @@ class Matrix:
             for j in range(self.col_size):
                 res.setElement(i, j, scalar*res[i][j])
         return res
+
+    def det(self):
+        return self.matrix[0][0]*self.matrix[1][1] - self.matrix[0][1]*self.matrix[1][0]
 
     def pseudoinverse(self):
         pass

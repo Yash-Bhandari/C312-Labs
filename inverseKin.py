@@ -59,8 +59,15 @@ def inverse_kinematics(l, theta, pos, n, mode):
     i = 0
 
     if mode == 'newton': 
+        jiggle = Matrix(2,1)
+        jiggle[0][0] = 0.1
+        jiggle[1][0] = 0.1
         while (i <= n and res.vec_norm() > THRESHOLD):
             new_pos, J = eval_robot(l, theta)
+            if J.det() == 0:
+                print("Jacobian is singular")
+                theta = theta = theta + jiggle
+                continue
             J_inv = J.TwoByTwoInverse()*(-1)
             s = J_inv*(new_pos+pos*(-1))
             theta = theta+s
@@ -88,14 +95,7 @@ def inverse_kinematics(l, theta, pos, n, mode):
 
     return theta[0][0], theta[1][0]
 
-<<<<<<< HEAD:inverseKin.py
-pos, B = eval_robot(l, THETA)
-ret = inverse_kinematics(l, START_THETA, pos, 10, 'newton')
-print(ret, 'fin')
-   
-=======
 if __name__ == '__main__':
     pos, B = eval_robot(l, THETA)
     ret = inverse_kinematics(l, START_THETA, pos, 1, 'newton')
     print(ret, 'fin')
->>>>>>> edc4f5e70a927b347db576428d020f32f4f1a618:inversKin.py

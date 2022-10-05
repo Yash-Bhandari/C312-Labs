@@ -33,8 +33,8 @@ class RoboticArm:
 
 	def set_angles(self, theta1, theta2):
 		"""Set the angles of the joints in degrees"""
-		self.joint1.on_to_position(5, theta1)
-		self.joint2.on_to_position(5, theta2)
+		self.joint1.on_to_position(5, theta1, brake=False)
+		self.joint2.on_to_position(5, theta2, brake=False)
 
 		theta1 = theta1 * 180 / pi
 		theta2 = theta2 * 180 / pi
@@ -45,19 +45,28 @@ class RoboticArm:
 		"""Move the arm to the given location"""
 		if method == 'analytical':
 			theta1, theta2 = self.sim.angles_for_location(x, y)
+			self.set_angles(theta1 * 180 / pi, theta2 * 180 / pi)
+			print('Setting joints to theta1: {}, theta2: {}'.format(theta1 * 180 / pi, theta2 * 180 /pi ), file=sys.stderr)
 		elif method == 'numerical':
-
-			START_THETA = Matrix(2,1)
-			START_THETA[0][0] = self.joint1.position()
-			START_THETA[1][0] = self.joint2.position()
-			l = Matrix(2,1)
-			l[0][0] = JOINT1_LENGTH
-			l[1][0] = JOINT2_LENGTH
-			pos = Matrix(2,1)
-			pos[0][0] = x
-			pos[1][0] = y
-			theta1, theta2 = inverse_kinematics(l, START_THETA, pos, 20, 'newton')
-		self.set_angles(theta1 * 180 / pi, theta2 * 180 / pi)
+			start_x, start_y = self.get_position()
+			delta_x = x - start_x
+			delta_y = y - start_y
+			num_steps = distance(start_x, start_y, x, y) / 0.01
+			for step in range(1, 4):
+				start_angles = Matrix(2,1)
+				start_angles[0][0] = self.joint1.position * pi / 180
+				start_angles[1][0] = self.joint2.position * pi / 180
+				l = Matrix(2,1)
+				l[0][0] = JOINT1_LENGTH
+				l[1][0] = JOINT2_LENGTH
+				pos = Matrix(2,1)
+				pos[0][0] = start_x + delta_x * step / 3
+				pos[1][0] = start_y + delta_y * step / 3
+				theta1, theta2 = inverse_kinematics(l, start_angles, pos, 20, 'newton')
+				theta1 = theta1 * 180 / pi
+				theta2 = theta2 * 180 / pi
+				self.set_angles(theta1, theta2)
+			print('Setting joints to theta1: {}, theta2: {}'.format(theta1, theta2), file=sys.stderr)
 
 	def get_position(self):
 		return self.sim.location_with_angles(self.joint1.position * pi / 180, self.joint2.position * pi / 180)
@@ -77,8 +86,8 @@ def repeated_angle_test():
 		print(arm.get_position(), file=sys.stderr)
 		button.wait_for_bump('enter')
 
-	theta1 = 30
-	theta2 = 50
+	theta1 = 90
+	theta2 = -90
 	for trial in range(5):
 		print('Trial {}'.format(trial), file=sys.stderr)
 		go_to_angle(theta1, theta2)
@@ -104,27 +113,32 @@ def measure_angle():
 	arm = RoboticArm()
 	button = Button()
 
-	button.wait_for_bump('enter')
-	p0 = arm.get_position() # point 0, intersection of the two lines
-	arm.print_status()
-	button.wait_for_bump('enter')
-	p1 = arm.get_position() # point 1, first line
-	arm.print_status()
-	button.wait_for_bump('enter')
-	p2 = arm.get_position() # point 2, second line
-	arm.print_status()
-	angle = angle_of_intersecting_lines(p0, p1, p2) * 180 / pi
-	print("Angle between lines: {:}".format(angle), file=sys.stderr)
+	while True:
+		print('Press enter to start', file=sys.stderr)
+		button.wait_for_bump('enter')
+		p0 = arm.get_position() # point 0, intersection of the two lines
+		arm.print_status()
+		button.wait_for_bump('enter')
+		p1 = arm.get_position() # point 1, first line
+		arm.print_status()
+		button.wait_for_bump('enter')
+		p2 = arm.get_position() # point 2, second line
+		arm.print_status()
+		angle = angle_of_intersecting_lines(p0, p1, p2) * 180 / pi
+		print("Angle between lines: {:}".format(angle), file=sys.stderr)
 
 
 # q3 ai
 def go_to_position():
 	arm = RoboticArm()
 	button = Button()
-	positions = [(0.15, 0.1), (0.15, -0.1), (0, 0.15)]
+	positions = [(0.15, 0.1), (0.15, 0), (-0.05, 0.15)]
+	arm.print_status()
+	print('Press the button to start!', file=sys.stderr)
+	button.wait_for_bump('enter')
 	for x, y in positions:
 		print('Trying to go to ({:.2f}, {:.2f})'.format(x, y), file=sys.stderr)
-		arm.go_to_position(x, y)
+		arm.go_to_position(x, y, method='numerical')
 		arm.print_status()
 		button.wait_for_bump('enter')
 
@@ -132,25 +146,29 @@ def go_to_position():
 def midpoint():
 	arm = RoboticArm()
 	button = Button()
+	while True:
+		print('Press the button to start!', file=sys.stderr)
+		# Let user specify two points
+		button.wait_for_bump('enter')
+		x0, y0 = arm.get_position() 
+		arm.print_status()
+		button.wait_for_bump('enter')
+		x1, y1 = arm.get_position() # point 1, first line
+		arm.print_status()
 
-	# Let user specify two points
-	button.wait_for_bump('enter')
-	x0, y0 = arm.get_position() 
-	arm.print_status()
-	button.wait_for_bump('enter')
-	x1, y1 = arm.get_position() # point 1, first line
-	arm.print_status()
-
-	x_mid = (x0 + x1) / 2
-	y_mid = (y0 + y1) / 2
-	print('Midpoint: ({:.3f}, {:.3f})'.format(x_mid, y_mid), file=sys.stderr)
-	arm.go_to_position(x_mid, y_mid)
+		x_mid = (x0 + x1) / 2
+		y_mid = (y0 + y1) / 2
+		print('Midpoint: ({:.3f}, {:.3f})'.format(x_mid, y_mid), file=sys.stderr)
+		arm.go_to_position(x_mid, y_mid, method='numerical')
 
 
 if __name__ == "__main__":
-	repeated_angle_test()
+	# repeated_angle_test()
+	# measure_distance()
 	# measure_angle()
-	# midpoint()
+	# go_to_position()
+	midpoint()
+
 	# arm = RoboticArm()
 	# button = Button()
 	# # test moving
