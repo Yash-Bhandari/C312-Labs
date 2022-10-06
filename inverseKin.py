@@ -87,5 +87,5 @@ def inverse_kinematics(l, theta, pos, n, mode):
 
 if __name__ == '__main__':
     pos, B = eval_robot(l, THETA)
-    ret = inverse_kinematics(l, START_THETA, pos, 1, 'newton')
+    ret = inverse_kinematics(l, START_THETA, pos, 20, 'newton')
     print(ret, 'fin')
