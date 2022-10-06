@@ -46,11 +46,11 @@ def eval_robot(l, theta):
 def inverse_kinematics(l, theta, pos, n, mode):
     """
     Computes the angles of the arm to move the end effector to pos.
-    Implements Newton's and Broyden's method and an analytical solution
+    Implements Newton's method and an analytical solution
     Args:   
-        l (array 1x2): lenght of joint segments (meters)
-        theta (array 1x2): angle of joints (degrees)
-        pos (array 1x2): desiered (x,y) postion of end effector
+        l (matrix 2x1): lenght of joint segments (meters)
+        theta (matrix 2x1): angle of joints (degrees)
+        pos (matrix 2x1): desiered (x,y) postion of end effector
         n (int): max number of iterations on newton/broden
         mode (str): specifies the method 
     """
@@ -74,17 +74,6 @@ def inverse_kinematics(l, theta, pos, n, mode):
             theta = theta+s
             res = new_pos+pos*(-1)
             i += 1
-
-    elif mode == 'broyden':
-        while (i <= n and res.vec_norm() > THRESHOLD):
-            f = new_pos + pos*(-1)
-            s = f * B.TwoByTwoInverse()*(-1) # s = -B\f
-            theta = theta + s
-            new_pos, _ = eval_robot(l, theta)
-            y = new_pos + pos*(-1) + f*(-1)
-            #B = B + ((y-B*s')) / (s'*s)
-            res = new_pos + pos*(-1)
-            i+=1 
 
     else:  # analytical solution 
         dist = (l[0][0]**2+l[1][0]**2)**(1/2) # distance from origin to pos 
