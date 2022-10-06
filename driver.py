@@ -56,18 +56,22 @@ class RoboticArm:
 			start_x, start_y = self.get_position()
 			delta_x = x - start_x
 			delta_y = y - start_y
-			num_steps = distance(start_x, start_y, x, y) / 0.01
+			# Split the journey into 3 steps
 			for step in range(1, 4):
+				# prepare matrices to pass into the inverse_kinematics methods
 				start_angles = Matrix(2,1)
 				start_angles[0][0] = self.joint1.position * pi / 180
 				start_angles[1][0] = self.joint2.position * pi / 180
 				l = Matrix(2,1)
+				# joint length matrix
 				l[0][0] = JOINT1_LENGTH
 				l[1][0] = JOINT2_LENGTH
+				# position matrix, travelling 1/3 of the way each time
 				pos = Matrix(2,1)
 				pos[0][0] = start_x + delta_x * step / 3
 				pos[1][0] = start_y + delta_y * step / 3
 				theta1, theta2 = inverse_kinematics(l, start_angles, pos, 20, 'newton')
+				# convert to degrees
 				theta1 = (theta1 * 180 / pi ) % 360
 				theta2 = (theta2 * 180 / pi ) % 360
 				self.set_angles(theta1, theta2)
