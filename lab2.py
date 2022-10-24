@@ -5,6 +5,15 @@ from ev3dev2.button import Button
 from time import sleep
 from utils import distance, angle_of_intersecting_lines
 
+
+# q2 part a
+def locations():
+	arm = RoboticArm()
+	button = Button()
+	while True:
+		arm.print_status()
+		button.wait_for_bump('enter')
+
 # q2 part a
 def repeated_angle_test():
 	arm = RoboticArm()
@@ -94,7 +103,8 @@ def midpoint():
 
 if __name__ == "__main__":
 	# repeated_angle_test()
-	measure_distance()
+	# measure_distance()
+	locations()
 	# measure_angle()
 	# go_to_position()
 	# midpoint()

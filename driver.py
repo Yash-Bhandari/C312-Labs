@@ -5,6 +5,7 @@ from re import A
 
 from arms import RoboticArm2DoFSim
 from math import pi
+from time import sleep
 from utils import distance
 import math
 from ev3dev2.motor import LargeMotor, OUTPUT_A, OUTPUT_B  # type: ignore
@@ -36,12 +37,12 @@ class RoboticArm:
 		self.joint1.reset()
 		self.joint2.reset()
 
-	def set_angles(self, theta1, theta2, block=False):
+	def set_angles(self, theta1, theta2, brake=True, block=True):
 		"""Set the angles of the joints in degrees"""
 		if theta2 > 180:
 			theta2 = theta2 - 360
-		self.joint1.on_to_position(5, theta1, brake=False, block=False)
-		self.joint2.on_to_position(5, theta2, brake=False, block=block)
+		self.joint1.on_to_position(5, theta1, brake=brake, block=False)
+		self.joint2.on_to_position(5, theta2, brake=brake, block=block)
 
 		theta1 = theta1 / 180 * pi
 		theta2 = theta2 / 180 * pi
@@ -81,24 +82,34 @@ class RoboticArm:
 
 	def draw_line(self, x1, y1, x2, y2):
 		"""Draw a line from (x1, y1) to (x2, y2)"""
+		print("Trying to go to start position: {:.4f}, {:.4f}".format(x1, y1), file=sys.stderr)
 		self.go_to_position(x1, y1, method='analytical')
 		delta = Matrix.from_array([[x2 - x1], [y2 - y1]])
 		delta.normalize()
 
-		angles = Matrix.from_array([[self.joint2.position], [self.joint2.position]])
+		angles = Matrix.from_array([[self.joint1.position], [self.joint2.position]])
 
 		button = Button()
-		while distance(x2, y2, *self.get_position()) > 0.1:
+		print('Press the button to start', file=sys.stderr)
+		button.wait_for_bump('enter')
+		step_size = 5 # step size in degrees
+		sleep_time = 0.2 # time to sleep between steps
+		while distance(x2, y2, *self.get_position()) > 0.02:
+			dist = distance(x2 - x1, y2 - y1, *self.get_position())
+			if dist < 0.1 and step_size > 1:
+				step_size = step_size / 2
 			J = self.sim.jacobian(self.joint1.position * pi / 180, self.joint2.position * pi / 180)
 			if J.det() == 0:
 				J = self.sim.jacobian(self.joint1.position * pi / 180 + 0.1, self.joint2.position * pi / 180 + 0.1)
+			angles = Matrix.from_array([[self.joint1.position], [self.joint2.position]])
 			theta_dot = J.inverse() * delta 
-			angles = angles + theta_dot.scale(180 / pi).normalize()
+			angles = angles + theta_dot.scale(180 / pi).normalize().scale(step_size)
 			theta1, theta2 = angles[0][0] , angles[1][0] 
-			self.set_angles(theta1 , theta2, block=True)
+			self.set_angles(theta1 , theta2, brake=True, block=False)
+			sleep(sleep_time)
 			print('Setting joints to theta1: {}, theta2: {}'.format(theta1 , theta2 ), file=sys.stderr)
-			button.wait_for_bump('enter')
-
+			# button.wait_for_bump('enter')
+		# self.set_angles(angles[0][0] , angles[1][0], brake=True, block=True)
 	def get_position(self):
 		"""Returns the current estimated position of the end effector"""
 		return self.sim.location_with_angles(self.joint1.position * pi / 180, self.joint2.position * pi / 180)
@@ -109,5 +120,14 @@ class RoboticArm:
 		print("{:.4f}, {:.4f}".format(x, y), file=sys.stderr)
 
 if __name__ == "__main__":
+	button = Button()
 	arm = RoboticArm()
-	arm.draw_line(0.1, 0, 0.1, 0.1)
+	arm.draw_line(0.15, 0, 0, 0.15)
+	# print('Press enter to reset the arm', file=sys.stderr)
+	# button.wait_for_bump('enter')
+	# arm.print_status()
+	# x0, y0 = arm.get_position()
+	# button.wait_for_bump('enter')
+	# arm.print_status()
+	# x1, y1 = arm.get_position()
+	# arm.draw_line(x1, y1, x0, y0)
