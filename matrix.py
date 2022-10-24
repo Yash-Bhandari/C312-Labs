@@ -6,6 +6,17 @@ class Matrix:
         self.col_size = m 
         self.matrix = self.get_matrix(n, m)
 
+    @classmethod
+    def from_array(cls, array) -> 'Matrix':
+        n = len(array)
+        m = len(array[0])
+        matrix = cls(n, m)
+        for i in range(n):
+            for j in range(m):
+                matrix.setElement(i, j, array[i][j])
+        return matrix
+
+
     def get_matrix(self, n, m):
         """Generate nxm matrix"""
         matrix = [[0 for j in range(m)] for i in range(n)]
@@ -61,13 +72,18 @@ class Matrix:
         """Method called when when * is invoked between two Matrix objects, or between a matrix and a scalar"""
         if isinstance(other, Matrix):
             return self.multiply(other)
+        elif isinstance(other, (int, float)):
+            return self.scale(other)
+        else:
+            raise Exception("Invalid type")
 
-        res = Matrix(2, 2)
+    def scale(self, scalar):
+        """Scales the matrix by a scalar"""
+        res = Matrix(self.row_size, self.col_size)
         for i in range(self.row_size):
             for j in range(self.col_size):
-                res.setElement(i, j, other*self.matrix[i][j])
-
-        return res 
+                res.setElement(i, j, scalar*self.matrix[i][j])
+        return res
 
     def add(self, other):
         """Add two matrices"""
@@ -80,6 +96,17 @@ class Matrix:
     def __add__(self, other):
         """Method called when when + is invoked between two matrix objects"""
         return self.add(other)
+
+    def sub(self, other):
+        """Subtract two matrices"""
+        res = Matrix(len(self.matrix), len(self.matrix[0]))
+        for i in range(len(self.matrix)):
+            for j in range(len(self.matrix[0])):
+                res[i][j] = self.matrix[i][j] - other[i][j]
+        return res
+
+    def __sub__(self, other):
+        return self.sub(other)
 
     def TwoByTwoInverse(self):
         """Finds inverse of a 2x2 matrix"""
