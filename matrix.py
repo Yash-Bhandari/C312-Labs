@@ -18,6 +18,13 @@ class Matrix:
             strings.append(str(row))
         return '\n'.join(strings)  
 
+    def list2Matrix(self, l):
+        self.matrix = self.get_matrix(len(l), len(l[0]))
+        for i in range(len(l)):
+            for j in range(len(l[i])):
+                self.matrix[i][j] = l[i][j]
+        return self.matrix
+
     def __str__(self):
         """Method called when when print() or str() is invoked on an object"""
         return self.prettyMatrix(self.matrix)

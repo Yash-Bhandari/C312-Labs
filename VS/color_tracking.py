@@ -38,7 +38,7 @@ class Tracker:
     def TrackerThread(self, pointColor, goalColor):
         print("Tracker Started")
         # Get the camera
-        vc = cv2.VideoCapture(0)
+        vc = cv2.VideoCapture(1)
         if vc.isOpened(): # try to get the first frame
             rval, frame = vc.read()
         else:
@@ -72,7 +72,7 @@ class Tracker:
     def GetLocation(self, frame, color):
         # Uncomment for gaussian blur
         #blurred = cv2.GaussianBlur(frame, (11, 11), 0)
-        blurred = cv2.medianBlur(frame,11)
+        blurred = cv2.medianBlur(frame, 11)
         hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
         if color == 'r':
             # Red Tracking
@@ -115,7 +115,7 @@ class Tracker:
         
 
 print("Tracker Setup")
-tracker = Tracker('g', 'r')
+tracker = Tracker('r', 'b')
 print("Moving on")
 while True:
     print("Point is at: "+str(tracker.point))
