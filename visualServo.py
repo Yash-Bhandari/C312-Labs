@@ -41,25 +41,28 @@ class VisualServo:
 
         return J
 
-    def getNextGoal(self):
-        pass
 
     def reachVisualGoals(self, n, THRESHOLD):
+        # read joint angels 
+        self.x.setElement(0, 0, self.joint1.position) 
+        self.x.setElement(1, 0, self.joint2.position) 
+
         cur, goal = Matrix(2,1), Matrix(2,1)
         cur.list2Matrix(self.tracker.point) # current (u,v) pos of end effector --> red dot 
         goal.list2Matrix(self.tracker.goal) # (u,v) position of the goal pos --> blue dot
         res = goal+cur*(-1)
+
         J = self.initJacobian()
 
         i = 0
         while (i <= n and res.vec_norm() > THRESHOLD):
-            
-            # Solve for motion (solve for joint movment)
+            # Solve for motion 
             J_inv = J.TwoByTwoInverse()
             delta_x = J_inv*(res)
 
             # Move robot joints (move arm)
-
+            self.arm.set_angles(self.x[0][0]+delta_x[0][0], self.x[1][0]+delta_x[1][0])
+            self.x = self.x+delta_x
 
             # Read actual visual move (update cur)
             old = cur
