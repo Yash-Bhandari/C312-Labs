@@ -62,7 +62,7 @@ while(True):
 
     # display the camera and masked images
     cv.imshow('Masked', maskedFrame)
-    cv.imshow('Camera', frame)
+    #cv.imshow('Camera', frame)
 
 	# check for q to quit program with 5ms delay
     if cv.waitKey(5) & 0xFF == ord('q'):
