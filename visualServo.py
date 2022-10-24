@@ -73,3 +73,12 @@ class VisualServo:
             J = J+(delta_y+J*delta_x*(-1))*delta_x.transpose() / (delta_x.transpose()*delta_x)
             
             res = goal+cur*(-1)
+
+
+def main():
+    VS = VisualServo()
+    VS.reachVisualGoals(10, 1)
+
+
+if __name__ == '__main__':
+    main()
