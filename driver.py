@@ -3,11 +3,12 @@
 from dis import dis
 from re import A
 
-from numpy import matrix
 from arms import RoboticArm2DoFSim
 from math import pi
+from utils import distance
 import math
 from ev3dev2.motor import LargeMotor, OUTPUT_A, OUTPUT_B  # type: ignore
+from ev3dev2.button import Button
 import sys
 from inverseKin import inverse_kinematics, eval_robot
 from matrix import Matrix
@@ -25,6 +26,8 @@ class RoboticArm:
 		"""
 		self.speed = 20
 		self.sim = RoboticArm2DoFSim(j1, j2)
+		self.j1_length = j1
+		self.j2_length = j2
 		self.joint1 = LargeMotor(joint1_port)
 		self.joint2 = LargeMotor(joint2_port)
 		self.reset()
@@ -33,12 +36,12 @@ class RoboticArm:
 		self.joint1.reset()
 		self.joint2.reset()
 
-	def set_angles(self, theta1, theta2):
+	def set_angles(self, theta1, theta2, block=False):
 		"""Set the angles of the joints in degrees"""
 		if theta2 > 180:
 			theta2 = theta2 - 360
-		self.joint1.on_to_position(5, theta1, brake=False)
-		self.joint2.on_to_position(5, theta2, brake=False)
+		self.joint1.on_to_position(5, theta1, brake=False, block=False)
+		self.joint2.on_to_position(5, theta2, brake=False, block=block)
 
 		theta1 = theta1 / 180 * pi
 		theta2 = theta2 / 180 * pi
@@ -78,14 +81,33 @@ class RoboticArm:
 
 	def draw_line(self, x1, y1, x2, y2):
 		"""Draw a line from (x1, y1) to (x2, y2)"""
+		self.go_to_position(x1, y1, method='analytical')
 		delta = Matrix.from_array([[x2 - x1], [y2 - y1]])
 		delta.normalize()
 
+		angles = Matrix.from_array([[self.joint2.position], [self.joint2.position]])
+
+		button = Button()
+		while distance(x2, y2, *self.get_position()) > 0.1:
+			J = self.sim.jacobian(self.joint1.position * pi / 180, self.joint2.position * pi / 180)
+			if J.det() == 0:
+				J = self.sim.jacobian(self.joint1.position * pi / 180 + 0.1, self.joint2.position * pi / 180 + 0.1)
+			theta_dot = J.inverse() * delta 
+			angles = angles + theta_dot.scale(180 / pi).normalize()
+			theta1, theta2 = angles[0][0] , angles[1][0] 
+			self.set_angles(theta1 , theta2, block=True)
+			print('Setting joints to theta1: {}, theta2: {}'.format(theta1 , theta2 ), file=sys.stderr)
+			button.wait_for_bump('enter')
 
 	def get_position(self):
+		"""Returns the current estimated position of the end effector"""
 		return self.sim.location_with_angles(self.joint1.position * pi / 180, self.joint2.position * pi / 180)
 
 	def print_status(self):
 		print("Joint 1: {} Joint 2: {}".format(self.joint1.position, self.joint2.position), file=sys.stderr)
 		x, y = self.get_position()
 		print("{:.4f}, {:.4f}".format(x, y), file=sys.stderr)
+
+if __name__ == "__main__":
+	arm = RoboticArm()
+	arm.draw_line(0.1, 0, 0.1, 0.1)

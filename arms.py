@@ -1,4 +1,6 @@
 from math import cos, sin, pi, acos, asin, atan2, isclose
+from inverseKin import eval_robot
+from matrix import Matrix
 import sys
 
 class RoboticArm2DoFSim:
@@ -33,6 +35,13 @@ class RoboticArm2DoFSim:
 		assert isclose(x, predx, abs_tol=0.01), "x: {:.3f}, predx: {:.3f}".format(x, predx)
 		assert isclose(y, predy, abs_tol=0.01), "y: {:.3f}, predy: {:.3f}".format(y, predy)
 		return theta1, -theta2
+
+	def jacobian(self, theta1, theta2) -> Matrix:
+		"""Returns the Jacobian matrix for the given joint angles (radians)"""
+		joint_lengths = [[self.j1], [self.j2]]
+		joint_angles  = [[theta1], [theta2]]
+		pos, jacobian= eval_robot(joint_lengths, joint_angles)
+		return jacobian
 
 if __name__ == "__main__":
 	arm = RoboticArm2DoFSim(1, 1)

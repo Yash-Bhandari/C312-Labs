@@ -24,8 +24,8 @@ def eval_robot(l, theta):
     """
     Computes the (x,y) postion of a the end effector given the joint angles 
     Args:   
-        l (array 1x2): lenght of joint segments 
-        theta (array 1x2): angle of joints
+        l (array 2x1): length of joint segments 
+        theta (array 2x1): angle of joints
     """
     pos = Matrix(2,1)
 

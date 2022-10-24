@@ -16,6 +16,9 @@ class Matrix:
                 matrix.setElement(i, j, array[i][j])
         return matrix
 
+    def duplicate(self):
+        """Returns a new matrix with the same size and entries"""
+        return Matrix.from_array(self.matrix)
 
     def get_matrix(self, n, m):
         """Generate nxm matrix"""
@@ -126,6 +129,13 @@ class Matrix:
 
     def pseudoinverse(self):
         pass
+
+    def inverse(self):
+        if self.row_size != self.col_size:
+            raise Exception("Invalid matrix dimensions")
+        elif self.row_size != 2:
+            raise Exception("Only 2x2 matrices are supported")
+        return self.TwoByTwoInverse()
     
     def vec_norm(self):
         """Finds the L2 norm of a vector A"""
@@ -133,6 +143,16 @@ class Matrix:
         for i in range(len(self.matrix)):
             ret.append(self.matrix[i][0]**2)
         return (sum(ret))**(1/2)
+
+    def normalize(self):
+        """Normalizes the vector to be of length 1"""
+        if self.col_size != 1:
+            raise Exception("Invalid matrix dimensions")
+        norm = self.vec_norm()
+        result = Matrix(self.row_size, 1)
+        for i in range(len(self.matrix)):
+            result[i][0] = self.matrix[i][0]/norm
+        return result
 
     def __repr__(self):
         return str(self)

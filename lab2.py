@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 from driver import RoboticArm
 import sys
 from ev3dev2.button import Button
@@ -93,9 +94,9 @@ def midpoint():
 
 if __name__ == "__main__":
 	# repeated_angle_test()
-	# measure_distance()
+	measure_distance()
 	# measure_angle()
-	go_to_position()
+	# go_to_position()
 	# midpoint()
 
 	# arm = RoboticArm()
