@@ -128,7 +128,7 @@ class Matrix:
         pass
     
     def vec_norm(self):
-        """Finds the norm of a vector A"""
+        """Finds the L2 norm of a vector A"""
         ret = []
         for i in range(len(self.matrix)):
             ret.append(self.matrix[i][0]**2)
