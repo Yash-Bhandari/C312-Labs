@@ -49,6 +49,10 @@ class RoboticArm:
 		pred_x, pred_y = self.sim.location_with_angles(theta1, theta2)
 		print("Predicted Location: {:.3f}, {:.3f}".format(pred_x, pred_y), file=sys.stderr)
 
+	def add_to_angles(self, dtheta1, dtheta2):
+		"""Add the given angles to the current angles (degrees)"""
+		self.set_angles(self.joint1.position + dtheta1, self.joint2.position + dtheta2)
+
 	def go_to_position(self, x, y, method = 'analytical'):
 		"""Move the arm to the given location"""
 		if method == 'analytical':

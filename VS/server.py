@@ -18,19 +18,20 @@ class Server:
         serversocket.listen(5) 
         self.cs, addr = serversocket.accept()
         print ("Connected to: " + str(addr))
+        self.queue = Queue()
 
     # Sends set of angles to the brick via TCP.
     # Input: base_angle [Float]: The angle by which we want the base to move
     #        joint_angle [Float]: The angle by which we want to joint to move
     #        queue [Thread-safe Queue]: Mutable data structure to store (and return) the messages received from the client
-    def sendAngles(self, base_angle, joint_angle, queue):
+    def sendAngles(self, base_angle, joint_angle):
         # Format in which the client expects the data: "angle1,angle2"
         data = str(base_angle) + "," + str(joint_angle)
         print("Sending Data: (" + data + ") to robot.")
         self.cs.send(data.encode("UTF-8"))
         # Waiting for the client (ev3 brick) to let the server know that it is done moving
         reply = self.cs.recv(128).decode("UTF-8")
-        queue.put(reply)
+        self.queue.put(reply)
 
     # Sends a termination message to the client. This will cause the client to exit "cleanly", after stopping the motors.
     def sendTermination(self):
@@ -46,10 +47,8 @@ class Server:
 
 
         
-host = "192.168.0.2"
-port = 9999
-server = Server(host, port)
-queue = Queue()
-
-while True:
-    timer.sleep(2)
+def init_server():
+    host = "169.254.167.244"
+    port = 9999
+    server = Server(host, port)
+    return server

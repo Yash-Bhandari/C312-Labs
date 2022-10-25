@@ -61,7 +61,15 @@ class Matrix:
     def transpose(self, matrix):
         """Returns the transpose of the matrix"""
         return [list(i) for i in zip(*matrix)]
-    
+
+    @property 
+    def T(self):
+        result = Matrix(self.col_size, self.row_size)
+        for i in range(self.row_size):
+            for j in range(self.col_size):
+                result[i][j] = self.matrix[j][i]
+        return result
+
     def multiply(self, other):
         """Implementation of matrix multiply"""
         res = Matrix(len(self.matrix), len(other[0]))

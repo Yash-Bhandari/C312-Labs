@@ -1,82 +1,92 @@
+#!/usr/bin/env python3
 from matrix import Matrix
 from VS.color_tracking import Tracker
-from driver import RoboticArm
+from VS.server import Server, init_server
+from time import sleep
 
 
 class VisualServo:
-    def __init__(self, c1, c2):
+    def __init__(self, c1, c2, server: Server):
+        print("aaaaaaaaaaaa")
         self.tracker = Tracker(c1, c2)
-        self.arm = RoboticArm()
-        self.x = Matrix(2,1) # (u, v)
+        sleep(5)
+        print("bbbbbbbbbbbbb")
+        self.server = server
 
     def initJacobian(self):
-        # read joint angels 
-        self.x.setElement(0, 0, self.joint1.position) 
-        self.x.setElement(1, 0, self.joint2.position) 
 
-        cur, J = Matrix(2,1), Matrix(2,2)
-        cur.list2Matrix(self.tracker.point)
+        J = Matrix(2,2)
+        cur = self.get_point()
 
         # move joint 1
         theta1 = 5
 
-        self.arm.set_angles(self.x[0][0] + theta1, self.x[1][0])
+        # self.arm.set_angles(self.x[0][0] + theta1, self.x[1][0])
+        self.server.sendAngles(theta1, 0)
 
         old = cur 
-        cur.list2Matrix(self.tracker.point)
+        cur = self.get_point()
 
-        J.setElement(0, 0, (cur[0][0]+old[0][0]*(-1))/(theta1)) #du/dtheta1
-        J.setElement(1, 0, (cur[1][0]+old[1][0]*(-1))/(theta1)) #dv/dtheta1
+        J.setElement(0, 0, (cur[0][0]-old[0][0])/(theta1)) #du/dtheta1
+        J.setElement(1, 0, (cur[1][0]-old[1][0])/(theta1)) #dv/dtheta1
 
         # move joint 2
         theta2 = 5
 
         old = cur 
-        cur.list2Matrix(self.tracker.point)
+        cur = self.get_point()
 
-        self.arm.set_angles(self.x[0][0] + theta1, self.x[1][0]+theta2)
+        self.server.sendAngles(0, theta2)
         
         J.setElement(0, 1, (cur[0][0]+old[0][0]*(-1))/(theta2)) #du/dtheta2
         J.setElement(1, 1, (cur[1][0]+old[1][0]*(-1))/(theta2)) #dv/dtheta2
 
         return J
 
+    def get_point(self):
+        return Matrix.from_array([[self.tracker.point[0,0]], [self.tracker.point[0,1]]])
+
+    def get_goal(self):
+        return Matrix.from_array([[self.tracker.goal[0,0]], [self.tracker.goal[0,0]]])
 
     def reachVisualGoals(self, n, THRESHOLD):
-        # read joint angels 
-        self.x.setElement(0, 0, self.joint1.position) 
-        self.x.setElement(1, 0, self.joint2.position) 
-
         cur, goal = Matrix(2,1), Matrix(2,1)
-        cur.list2Matrix(self.tracker.point) # current (u,v) pos of end effector --> red dot 
-        goal.list2Matrix(self.tracker.goal) # (u,v) position of the goal pos --> blue dot
-        res = goal+cur*(-1)
+        cur = self.get_point()
+        goal = self.get_goal()
+        res = goal - cur
 
+
+        print("bbbbbbbbbbbbbbbbb")
         J = self.initJacobian()
 
         i = 0
-        while (i <= n and res.vec_norm() > THRESHOLD):
+        while True:
             # Solve for motion 
+            if J.det() == 0:
+                J[0][0] += 0.01
+                J[1][1] += 0.01
             J_inv = J.TwoByTwoInverse()
             delta_x = J_inv*(res)
 
             # Move robot joints (move arm)
-            self.arm.set_angles(self.x[0][0]+delta_x[0][0], self.x[1][0]+delta_x[1][0])
-            self.x = self.x+delta_x
+            self.server.sendAngles(delta_x[0][0], delta_x[1][0])
+            sleep(0.5)
 
             # Read actual visual move (update cur)
             old = cur
-            cur.list2Matrix(self.tracker.point)
-            delta_y = cur+old*(-1)
+            cur = self.get_point()
+            delta_y = cur-old
 
             # Update Jacobian 
-            J = J+(delta_y+J*delta_x*(-1))*delta_x.transpose() / (delta_x.transpose()*delta_x)
+            breakpoint()
+            J = J + (delta_y - (J*delta_x))*delta_x.T.scale(delta_x.vec_norm()**2) 
             
             res = goal+cur*(-1)
 
 
 def main():
-    VS = VisualServo()
+    server = init_server()
+    VS = VisualServo('b', 'g', server)
     VS.reachVisualGoals(10, 1)
 
 

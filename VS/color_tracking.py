@@ -15,16 +15,18 @@ redLowMask = (0,50,50)
 redHighMask = (10, 255, 255)
 
 #If the ball is blue
-blueLowMask = (100, 150, 0)
+blueLowMask = (100, 140, 0)
 blueHighMask = (140, 255, 255)
 
+# red_range = ((0, 25), (60, 230), (220, 255))
+# blue_range = ((90, 140), (160, 255), (170, 255))
 #If the ball is orange
 orangeLowMask = (5, 50, 50)
 orangeHighMask = (20, 255, 255)
 
 #If the ball is green
-greenLowMask= (90, 50, 50)
-greenHighMask= (150, 255, 255)
+greenLowMask = (40, 60, 0)
+greenHighMask= (90, 255, 255)
 ########################################
 
 class Tracker:
@@ -71,7 +73,7 @@ class Tracker:
 
     def GetLocation(self, frame, color):
         # Uncomment for gaussian blur
-        #blurred = cv2.GaussianBlur(frame, (11, 11), 0)
+        # blurred = cv2.GaussianBlur(frame, (11, 11), 0)
         blurred = cv2.medianBlur(frame, 11)
         hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
         if color == 'r':
@@ -87,13 +89,14 @@ class Tracker:
             # Green Tracking
             mask = cv2.inRange(hsv, greenLowMask, greenHighMask)
         # Perform erosion and dilation in the image (in 11x11 pixels squares) in order to reduce the "blips" on the mask
-        mask = cv2.erode(mask, np.ones((11, 11),np.uint8), iterations=2)
-        mask = cv2.dilate(mask, np.ones((11, 11),np.uint8), iterations=5)
+        mask = cv2.erode(mask, np.ones((9, 9),np.uint8), iterations=2)
+        mask = cv2.dilate(mask, np.ones((9, 9),np.uint8), iterations=5)
         # Mask the blurred image so that we only consider the areas with the desired colour
         masked_blurred = cv2.bitwise_and(blurred,blurred, mask= mask)
         # masked_blurred = cv2.bitwise_and(frame,frame, mask= mask)
         # Convert the masked image to gray scale (Required by HoughCircles routine)
         result = cv2.cvtColor(masked_blurred, cv2.COLOR_BGR2GRAY)
+        cv2.imshow('Masked' + color , result)
         # Detect circles in the image using Canny edge and Hough transform
         circles = cv2.HoughCircles(result, cv2.HOUGH_GRADIENT, 1.5, 300, param1=100, param2=20, minRadius=20, maxRadius=200)
         return circles
@@ -114,10 +117,10 @@ class Tracker:
             
         
 
-print("Tracker Setup")
-tracker = Tracker('r', 'b')
-print("Moving on")
-while True:
-    print("Point is at: "+str(tracker.point))
-    print("Goal is at: "+str(tracker.goal))
-    time.sleep(2)
+# print("Tracker Setup")
+# tracker = Tracker('b', 'g')
+# print("Moving on")
+# while True:
+#     print("Point is at: "+str(tracker.point))
+#     print("Goal is at: "+str(tracker.goal))
+#     time.sleep(2)
