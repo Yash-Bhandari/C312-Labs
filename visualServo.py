@@ -6,9 +6,9 @@ from time import sleep
 
 
 class VisualServo:
-    def __init__(self, c1, c2, server: Server):
-        self.tracker = Tracker(c1, c2)
+    def __init__(self, tracker: Tracker, server: Server):
         sleep(3)
+        self.tracker = tracker
         self.server = server
         self.goal = self.get_goal()
 
@@ -18,7 +18,7 @@ class VisualServo:
         cur = self.avg_pos()
 
         # move joint 1
-        theta1 = 15
+        theta1 = 8
 
         # self.arm.set_angles(self.x[0][0] + theta1, self.x[1][0])
         self.server.sendAngles(theta1, 0)
@@ -31,7 +31,7 @@ class VisualServo:
 
         # move joint 2
         self.server.sendAngles(-theta1, 0)
-        theta2 = 15
+        theta2 = 8
 
         old = cur 
         cur = self.get_point()
@@ -40,6 +40,7 @@ class VisualServo:
         J.setElement(0, 1, (cur[0][0]+old[0][0]*(-1))/(theta2)) #du/dtheta2
         J.setElement(1, 1, (cur[1][0]+old[1][0]*(-1))/(theta2)) #dv/dtheta2
 
+        self.server.sendAngles(0, -theta2)
         return J
 
     def get_point(self):
@@ -50,14 +51,14 @@ class VisualServo:
 
     def avg_pos(self):
         values = []
-        for i in range(10):
+        for i in range(20):
             values.append(self.get_point())
             sleep(0.1)
         return sum(values, start=Matrix(2, 1)) * (1/len(values))
 
     def reachVisualGoals(self, n, THRESHOLD):
         cur, goal = Matrix(2,1), Matrix(2,1)
-        cur = self.get_point()
+        cur = self.avg_pos()
         res = self.goal - cur
 
 
@@ -74,6 +75,7 @@ class VisualServo:
             delta_x = J_inv*(res)
 
             # Move robot joints (move arm)
+            delta_x = delta_x.normalize().scale(20)
             self.server.sendAngles(delta_x[0][0], delta_x[1][0])
             sleep(0.5)
 
@@ -86,15 +88,16 @@ class VisualServo:
             a = delta_y - (J*delta_x)
             print(a)
             b = a * delta_x.T
-            c = b.scale(delta_x.vec_norm()**2)
+            c = b.scale(1 / delta_x.vec_norm()**2)
             J = J + c
             
             res = goal+cur*(-1)
 
 
 def main():
+    tracker = Tracker('b', 'g')
     server = init_server()
-    VS = VisualServo('b', 'g', server)
+    VS = VisualServo(tracker, server)
     VS.reachVisualGoals(10, 1)
 
 

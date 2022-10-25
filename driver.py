@@ -126,7 +126,9 @@ class RoboticArm:
 if __name__ == "__main__":
 	button = Button()
 	arm = RoboticArm()
-	arm.draw_line(0.15, 0, 0, 0.15)
+	# arm.draw_line(0.15, 0, 0, 0.15)
+	arm.draw_line(0.1, 0, 0.05, 0.1)
+	# arm.draw_line(0.15, 0, -0.1, 0.1)
 	# print('Press enter to reset the arm', file=sys.stderr)
 	# button.wait_for_bump('enter')
 	# arm.print_status()
