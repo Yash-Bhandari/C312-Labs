@@ -78,8 +78,12 @@ class VisualServo:
             delta_y = cur-old
 
             # Update Jacobian 
+            a = delta_y - (J*delta_x)
+            print(a)
             breakpoint()
-            J = J + (delta_y - (J*delta_x))*delta_x.T.scale(delta_x.vec_norm()**2) 
+            b = a * delta_x.T
+            c = b.scale(delta_x.vec_norm()**2)
+            J = J + c
             
             res = goal+cur*(-1)
 

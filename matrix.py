@@ -65,8 +65,8 @@ class Matrix:
     @property 
     def T(self):
         result = Matrix(self.col_size, self.row_size)
-        for i in range(self.row_size):
-            for j in range(self.col_size):
+        for i in range(self.col_size):
+            for j in range(self.row_size):
                 result[i][j] = self.matrix[j][i]
         return result
 
