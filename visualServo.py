@@ -19,7 +19,7 @@ class VisualServo:
         cur = self.get_point()
 
         # move joint 1
-        theta1 = 5
+        theta1 = 15
 
         # self.arm.set_angles(self.x[0][0] + theta1, self.x[1][0])
         self.server.sendAngles(theta1, 0)
@@ -31,11 +31,11 @@ class VisualServo:
         J.setElement(1, 0, (cur[1][0]-old[1][0])/(theta1)) #dv/dtheta1
 
         # move joint 2
-        theta2 = 5
+        self.server.sendAngles(-theta1, 0)
+        theta2 = 15
 
         old = cur 
         cur = self.get_point()
-
         self.server.sendAngles(0, theta2)
         
         J.setElement(0, 1, (cur[0][0]+old[0][0]*(-1))/(theta2)) #du/dtheta2
