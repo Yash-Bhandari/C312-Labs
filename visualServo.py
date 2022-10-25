@@ -11,6 +11,11 @@ class VisualServo:
         self.tracker = tracker
         self.server = server
         self.goal = self.get_goal()
+        print("Goal:", self.goal)
+        while self.goal[0][0] == 0:
+            print("Goal:", self.goal)
+            self.goal = self.get_goal()
+            sleep(0.5)
 
     def initJacobian(self):
 
@@ -25,7 +30,8 @@ class VisualServo:
 
         old = cur 
         cur = self.avg_pos()
-
+        print('old:', old)
+        print('cur:', cur)
         J.setElement(0, 0, (cur[0][0]-old[0][0])/(theta1)) #du/dtheta1
         J.setElement(1, 0, (cur[1][0]-old[1][0])/(theta1)) #dv/dtheta1
 
@@ -33,12 +39,11 @@ class VisualServo:
         self.server.sendAngles(-theta1, 0)
         theta2 = 8
 
-        old = cur 
-        cur = self.get_point()
+        old = self.avg_pos()
         self.server.sendAngles(0, theta2)
-        
-        J.setElement(0, 1, (cur[0][0]+old[0][0]*(-1))/(theta2)) #du/dtheta2
-        J.setElement(1, 1, (cur[1][0]+old[1][0]*(-1))/(theta2)) #dv/dtheta2
+        cur = self.avg_pos()
+        J.setElement(0, 1, (cur[0][0]-old[0][0])/(theta2)) #du/dtheta2
+        J.setElement(1, 1, (cur[1][0]-old[1][0])/(theta2)) #dv/dtheta2
 
         self.server.sendAngles(0, -theta2)
         return J
@@ -57,25 +62,29 @@ class VisualServo:
         return sum(values, start=Matrix(2, 1)) * (1/len(values))
 
     def reachVisualGoals(self, n, THRESHOLD):
-        cur, goal = Matrix(2,1), Matrix(2,1)
-        cur = self.avg_pos()
-        res = self.goal - cur
 
 
-        print("bbbbbbbbbbbbbbbbb")
         J = self.initJacobian()
+        cur = self.avg_pos()
 
+        res = self.goal - cur
         i = 0
         while True:
             # Solve for motion 
             if J.det() == 0:
+                print("Jacobian is singular")
                 J[0][0] += 0.01
                 J[1][1] += 0.01
+            print("Jacobian")
+            print(J)
             J_inv = J.TwoByTwoInverse()
             delta_x = J_inv*(res)
 
             # Move robot joints (move arm)
-            delta_x = delta_x.normalize().scale(20)
+            delta_x = delta_x.normalize().scale(10)
+            print("Delta x")
+            print(delta_x)
+            # breakpoint()
             self.server.sendAngles(delta_x[0][0], delta_x[1][0])
             sleep(0.5)
 
@@ -86,12 +95,11 @@ class VisualServo:
 
             # Update Jacobian 
             a = delta_y - (J*delta_x)
-            print(a)
             b = a * delta_x.T
             c = b.scale(1 / delta_x.vec_norm()**2)
             J = J + c
             
-            res = goal+cur*(-1)
+            res = self.goal-cur
 
 
 def main():
