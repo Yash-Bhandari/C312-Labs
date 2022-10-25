@@ -96,7 +96,6 @@ class Tracker:
         # masked_blurred = cv2.bitwise_and(frame,frame, mask= mask)
         # Convert the masked image to gray scale (Required by HoughCircles routine)
         result = cv2.cvtColor(masked_blurred, cv2.COLOR_BGR2GRAY)
-        cv2.imshow('Masked' + color , result)
         # Detect circles in the image using Canny edge and Hough transform
         circles = cv2.HoughCircles(result, cv2.HOUGH_GRADIENT, 1.5, 300, param1=100, param2=20, minRadius=20, maxRadius=200)
         return circles
@@ -116,11 +115,11 @@ class Tracker:
         
             
         
-
-# print("Tracker Setup")
-# tracker = Tracker('b', 'g')
-# print("Moving on")
-# while True:
-#     print("Point is at: "+str(tracker.point))
-#     print("Goal is at: "+str(tracker.goal))
-#     time.sleep(2)
+if __name__ == "__main__":
+    print("Tracker Setup")
+    tracker = Tracker('b', 'g')
+    print("Moving on")
+    while True:
+        print("Point is at: "+str(tracker.point))
+        print("Goal is at: "+str(tracker.goal))
+        time.sleep(2)

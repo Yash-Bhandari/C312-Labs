@@ -7,16 +7,15 @@ from time import sleep
 
 class VisualServo:
     def __init__(self, c1, c2, server: Server):
-        print("aaaaaaaaaaaa")
         self.tracker = Tracker(c1, c2)
-        sleep(5)
-        print("bbbbbbbbbbbbb")
+        sleep(3)
         self.server = server
+        self.goal = self.get_goal()
 
     def initJacobian(self):
 
         J = Matrix(2,2)
-        cur = self.get_point()
+        cur = self.avg_pos()
 
         # move joint 1
         theta1 = 5
@@ -25,7 +24,7 @@ class VisualServo:
         self.server.sendAngles(theta1, 0)
 
         old = cur 
-        cur = self.get_point()
+        cur = self.avg_pos()
 
         J.setElement(0, 0, (cur[0][0]-old[0][0])/(theta1)) #du/dtheta1
         J.setElement(1, 0, (cur[1][0]-old[1][0])/(theta1)) #dv/dtheta1
@@ -49,11 +48,17 @@ class VisualServo:
     def get_goal(self):
         return Matrix.from_array([[self.tracker.goal[0,0]], [self.tracker.goal[0,0]]])
 
+    def avg_pos(self):
+        values = []
+        for i in range(10):
+            values.append(self.get_point())
+            sleep(0.1)
+        return sum(values, start=Matrix(2, 1)) * (1/len(values))
+
     def reachVisualGoals(self, n, THRESHOLD):
         cur, goal = Matrix(2,1), Matrix(2,1)
         cur = self.get_point()
-        goal = self.get_goal()
-        res = goal - cur
+        res = self.goal - cur
 
 
         print("bbbbbbbbbbbbbbbbb")
@@ -74,13 +79,12 @@ class VisualServo:
 
             # Read actual visual move (update cur)
             old = cur
-            cur = self.get_point()
+            cur = self.avg_pos()
             delta_y = cur-old
 
             # Update Jacobian 
             a = delta_y - (J*delta_x)
             print(a)
-            breakpoint()
             b = a * delta_x.T
             c = b.scale(delta_x.vec_norm()**2)
             J = J + c
