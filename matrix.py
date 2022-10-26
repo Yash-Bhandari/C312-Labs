@@ -8,6 +8,7 @@ class Matrix:
 
     @classmethod
     def from_array(cls, array) -> 'Matrix':
+        """Converts python array to Matrix class instance"""
         n = len(array)
         m = len(array[0])
         matrix = cls(n, m)
@@ -64,6 +65,7 @@ class Matrix:
 
     @property 
     def T(self):
+        """Takes transpose of Matrix instance"""
         result = Matrix(self.col_size, self.row_size)
         for i in range(self.col_size):
             for j in range(self.row_size):
@@ -133,10 +135,8 @@ class Matrix:
         return res
 
     def det(self):
+        """2x2 matrix determinate implementation"""
         return self.matrix[0][0]*self.matrix[1][1] - self.matrix[0][1]*self.matrix[1][0]
-
-    def pseudoinverse(self):
-        pass
 
     def inverse(self):
         if self.row_size != self.col_size:

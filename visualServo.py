@@ -6,46 +6,47 @@ from time import sleep
 
 
 class VisualServo:
+    """Implements methods for achieving visual goals"""
+
     def __init__(self, tracker: Tracker, server: Server):
         sleep(3)
-        self.tracker = tracker
-        self.server = server
-        self.goal = self.get_goal()
+        self.tracker = tracker 
+        self.server = server 
+        self.goal = self.get_goal() 
+
         print("Goal:", self.goal)
-        while self.goal[0][0] == 0:
+        while self.goal[0][0] == 0: # Check to ensure goal is set properly
             print("Goal:", self.goal)
             self.goal = self.get_goal()
             sleep(0.5)
 
-    def initJacobian(self):
+    def initJacobian(self): 
+        """Initialize the jacobian for some local region"""
+        J, cur = Matrix(2,2), self.avg_pos()
+        theta1 = theta2 = 15
 
-        J = Matrix(2,2)
-        cur = self.avg_pos()
-
-        # move joint 1
-        theta1 = 8
-
-        # self.arm.set_angles(self.x[0][0] + theta1, self.x[1][0])
-        self.server.sendAngles(theta1, 0)
-
+        # == move joint 1 == 
         old = cur 
+        self.server.sendAngles(theta1, 0) # preforme delta theta1
         cur = self.avg_pos()
-        print('old:', old)
-        print('cur:', cur)
         J.setElement(0, 0, (cur[0][0]-old[0][0])/(theta1)) #du/dtheta1
         J.setElement(1, 0, (cur[1][0]-old[1][0])/(theta1)) #dv/dtheta1
 
-        # move joint 2
-        self.server.sendAngles(-theta1, 0)
-        theta2 = 8
+        sleep(0.5)
+        self.server.sendAngles(-theta1, 0) # undo delta theta1
+        sleep(0.5)
 
+        # == move joint 2 == 
         old = self.avg_pos()
-        self.server.sendAngles(0, theta2)
+        self.server.sendAngles(0, theta2) # preforme delta theta2
         cur = self.avg_pos()
         J.setElement(0, 1, (cur[0][0]-old[0][0])/(theta2)) #du/dtheta2
         J.setElement(1, 1, (cur[1][0]-old[1][0])/(theta2)) #dv/dtheta2
 
-        self.server.sendAngles(0, -theta2)
+        sleep(0.5)
+        self.server.sendAngles(0, -theta2) # undo delta theta2
+        sleep(0.5)
+
         return J
 
     def get_point(self):
@@ -61,8 +62,31 @@ class VisualServo:
             sleep(0.1)
         return sum(values, start=Matrix(2, 1)) * (1/len(values))
 
-    def reachVisualGoals(self, n, THRESHOLD):
 
+    def SubdividePath(self, size=20):
+        goal, cur, path = self.get_goal(), self.avg_pos(), []
+        error = goal - cur
+
+        slope = (goal[1][0]-cur[1][0])/(goal[0][0]-cur[0][0]) 
+        perpSlope = -1/(slope)
+        PathLength = error.vec_norm() # pixel lenght of path 
+
+        for i in range(len(PathLength%20)):
+            pass
+
+        return path 
+
+    def Plot(self):
+        pass
+
+    def UncalibratedVisualServoing(self, Goal, THRESHOLD):
+        """
+        Uses Newtons method and a byroden update to move end effector to goal pos 
+        within a margin of threshold.
+            ARGS: 
+                Goal (2x1 matrix): The pixel cords we want the end effector to reach 
+                THRESHOLD (int): The pixel distance we need to be within
+        """
 
         J = self.initJacobian()
         cur = self.avg_pos()
@@ -106,7 +130,7 @@ def main():
     tracker = Tracker('b', 'g')
     server = init_server()
     VS = VisualServo(tracker, server)
-    VS.reachVisualGoals(10, 1)
+    VS.UncalibratedVisualServoing(10, 1)
 
 
 if __name__ == '__main__':
