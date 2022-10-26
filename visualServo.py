@@ -64,15 +64,17 @@ class VisualServo:
 
 
     def SubdividePath(self, size=20):
+
         goal, cur, path = self.get_goal(), self.avg_pos(), []
-        error = goal - cur
+        error, point = goal - cur, cur 
 
         slope = (goal[1][0]-cur[1][0])/(goal[0][0]-cur[0][0]) 
         perpSlope = -1/(slope)
         PathLength = error.vec_norm() # pixel lenght of path 
 
         for i in range(len(PathLength%20)):
-            pass
+            point += slope()
+            path.append()
 
         return path 
 
