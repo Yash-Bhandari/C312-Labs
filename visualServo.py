@@ -9,16 +9,16 @@ class VisualServo:
     """Implements methods for achieving visual goals"""
 
     def __init__(self, tracker: Tracker, server: Server):
-        sleep(3)
         self.tracker = tracker 
         self.server = server 
-        self.goal = self.get_goal() 
+        sleep(3)
+        self.goal = self.avg_goal() 
 
         print("Goal:", self.goal)
-        while self.goal[0][0] == 0: # Check to ensure goal is set properly
-            print("Goal:", self.goal)
-            self.goal = self.get_goal()
-            sleep(0.5)
+        # while self.goal[0][0] == 0: # Check to ensure goal is set properly
+        #     print("Goal:", self.goal)
+        #     self.goal = self.get_goal()
+        #     sleep(0.5)
 
     def initJacobian(self): 
         """Initialize the jacobian for some local region"""
@@ -53,7 +53,7 @@ class VisualServo:
         return Matrix.from_array([[self.tracker.point[0,0]], [self.tracker.point[0,1]]])
 
     def get_goal(self):
-        return Matrix.from_array([[self.tracker.goal[0,0]], [self.tracker.goal[0,0]]])
+        return Matrix.from_array([[self.tracker.goal[0,0]], [self.tracker.goal[0,1]]])
 
     def avg_pos(self):
         values = []
@@ -62,6 +62,12 @@ class VisualServo:
             sleep(0.1)
         return sum(values, start=Matrix(2, 1)) * (1/len(values))
 
+    def avg_goal(self):
+        values = []
+        for i in range(20):
+            values.append(self.get_goal())
+            sleep(0.1)
+        return sum(values, start=Matrix(2, 1)) * (1/len(values))
 
     def SubdividePath(self, size=20):
         goal, cur, path = self.get_goal(), self.avg_pos(), []
@@ -79,12 +85,11 @@ class VisualServo:
     def Plot(self):
         pass
 
-    def UncalibratedVisualServoing(self, Goal, THRESHOLD):
+    def UncalibratedVisualServoing(self, THRESHOLD = 7):
         """
         Uses Newtons method and a byroden update to move end effector to goal pos 
         within a margin of threshold.
             ARGS: 
-                Goal (2x1 matrix): The pixel cords we want the end effector to reach 
                 THRESHOLD (int): The pixel distance we need to be within
         """
 
@@ -93,21 +98,27 @@ class VisualServo:
 
         res = self.goal - cur
         i = 0
-        while True:
+        while res.vec_norm() > THRESHOLD:
             # Solve for motion 
             if J.det() == 0:
                 print("Jacobian is singular")
                 J[0][0] += 0.01
                 J[1][1] += 0.01
-            print("Jacobian")
-            print(J)
+            # print("Jacobian")
+            # print(J)
             J_inv = J.TwoByTwoInverse()
             delta_x = J_inv*(res)
 
             # Move robot joints (move arm)
-            delta_x = delta_x.normalize().scale(10)
-            print("Delta x")
-            print(delta_x)
+            error = res.vec_norm()
+            step_size = 10
+            if error < 30:
+                step_size = 5
+            if error < 15:
+                step_size = 2
+            delta_x = delta_x.normalize().scale(step_size)
+            # print("Delta x")
+            # print(delta_x)
             # breakpoint()
             self.server.sendAngles(delta_x[0][0], delta_x[1][0])
             sleep(0.5)
@@ -117,6 +128,7 @@ class VisualServo:
             cur = self.avg_pos()
             delta_y = cur-old
 
+
             # Update Jacobian 
             a = delta_y - (J*delta_x)
             b = a * delta_x.T
@@ -124,13 +136,17 @@ class VisualServo:
             J = J + c
             
             res = self.goal-cur
+            print('Distance from goal:', res.vec_norm())
+        breakpoint()
+        print("Done baby", res, res.vec_norm())
+
 
 
 def main():
     tracker = Tracker('b', 'g')
     server = init_server()
     VS = VisualServo(tracker, server)
-    VS.UncalibratedVisualServoing(10, 1)
+    VS.UncalibratedVisualServoing()
 
 
 if __name__ == '__main__':
