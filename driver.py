@@ -86,34 +86,40 @@ class RoboticArm:
 
 	def draw_line(self, x1, y1, x2, y2):
 		"""Draw a line from (x1, y1) to (x2, y2)"""
+		# go to the start position
 		print("Trying to go to start position: {:.4f}, {:.4f}".format(x1, y1), file=sys.stderr)
 		self.go_to_position(x1, y1, method='analytical')
+		# This is the direction we want our end effector to always move in
 		delta = Matrix.from_array([[x2 - x1], [y2 - y1]])
 		delta.normalize()
-
-		angles = Matrix.from_array([[self.joint1.position], [self.joint2.position]])
 
 		button = Button()
 		print('Press the button to start', file=sys.stderr)
 		button.wait_for_bump('enter')
-		step_size = 5 # step size in degrees
-		sleep_time = 0.2 # time to sleep between steps
-		while distance(x2, y2, *self.get_position()) > 0.02:
+
+		step_size = 5 # how many degrees to move each iteration
+		sleep_time = 0.2 # time to sleep between iterations
+		dist = distance(x2 - x1, y2 - y1, *self.get_position())
+		while dist > 0.02:
 			dist = distance(x2 - x1, y2 - y1, *self.get_position())
+			# step size becomes smaller as we get closer to the target
 			if dist < 0.1 and step_size > 1:
 				step_size = step_size / 2
+			# calculate jacobian
 			J = self.sim.jacobian(self.joint1.position * pi / 180, self.joint2.position * pi / 180)
-			if J.det() == 0:
+			if J.det() == 0: # if the jacobian is singular, add some "jiggle"
 				J = self.sim.jacobian(self.joint1.position * pi / 180 + 0.1, self.joint2.position * pi / 180 + 0.1)
-			angles = Matrix.from_array([[self.joint1.position], [self.joint2.position]])
+
 			theta_dot = J.inverse() * delta 
-			angles = angles + theta_dot.scale(180 / pi).normalize().scale(step_size)
-			theta1, theta2 = angles[0][0] , angles[1][0] 
-			self.set_angles(theta1 , theta2, brake=True, block=False)
+			# convert to degrees and scale to step_size
+			theta_step =  theta_dot.scale(180 / pi).normalize().scale(step_size)
+			theta1 = self.joint1.position + theta_step[0][0] 
+			theta2 = self.joint2.position + theta_step[1][0] 
+			# move the arm and wait
+			self.set_angles(theta1, theta2, brake=True, block=False)
 			sleep(sleep_time)
 			print('Setting joints to theta1: {}, theta2: {}'.format(theta1 , theta2 ), file=sys.stderr)
-			# button.wait_for_bump('enter')
-		# self.set_angles(angles[0][0] , angles[1][0], brake=True, block=True)
+
 	def get_position(self):
 		"""Returns the current estimated position of the end effector"""
 		return self.sim.location_with_angles(self.joint1.position * pi / 180, self.joint2.position * pi / 180)
