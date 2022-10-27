@@ -37,10 +37,13 @@ class Tracker:
         thread = threading.Thread(target=self.TrackerThread, args=(pointColor, goalColor), daemon=True)
         thread.start()
 
-    def TrackerThread(self, pointColor, goalColor):
+    def TrackerThread(self, pointColor, goalColor, recording_path='visualservo.avi'):
         print("Tracker Started")
         # Get the camera
         vc = cv2.VideoCapture(1)
+        # Save the 
+        out = cv2.VideoWriter(recording_path, cv2.VideoWriter_fourcc(*"MJPG"), 20.0, (640,480))
+        
         if vc.isOpened(): # try to get the first frame
             rval, frame = vc.read()
         else:
@@ -61,6 +64,7 @@ class Tracker:
 
             # Shows the original image with the detected circles drawn.
             cv2.imshow("Result", frame)
+            out.write(frame)
 
             # check if esc key pressed
             key = cv2.waitKey(20)
@@ -68,6 +72,7 @@ class Tracker:
                 break
         
         vc.release()
+        out.release()
         cv2.destroyAllWindows()
         print("Tracker Ended")
 

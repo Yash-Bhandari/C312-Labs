@@ -42,6 +42,6 @@ while True:
     print(data, file=sys.stderr)
     if len(data) > 0:
         theta1, theta2 = map(float, data.split(','))
-        arm.set_angles(theta1, theta2)
+        arm.add_to_angles(theta1, theta2)
     client.sendDone()
     time.sleep(1)
