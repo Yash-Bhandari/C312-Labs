@@ -14,11 +14,6 @@ class VisualServo:
         sleep(3)
         self.goal = self.avg_goal() 
 
-        print("Goal:", self.goal)
-        # while self.goal[0][0] == 0: # Check to ensure goal is set properly
-        #     print("Goal:", self.goal)
-        #     self.goal = self.get_goal()
-        #     sleep(0.5)
 
     def initJacobian(self): 
         """Initialize the jacobian for some local region"""
