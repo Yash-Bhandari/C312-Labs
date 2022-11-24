@@ -1,3 +1,7 @@
+"""
+Made by: Justin Valentine, Yash Bhandari
+"""
+
 class Matrix:
     """Provides matrix operations for inverse kinematics"""
     def __init__(self, n, m):

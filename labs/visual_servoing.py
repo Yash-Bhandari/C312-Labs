@@ -14,11 +14,6 @@ class VisualServo:
         sleep(3)
         self.goal = self.avg_goal() 
 
-        print("Goal:", self.goal)
-        # while self.goal[0][0] == 0: # Check to ensure goal is set properly
-        #     print("Goal:", self.goal)
-        #     self.goal = self.get_goal()
-        #     sleep(0.5)
 
     def initJacobian(self): 
         """Initialize the jacobian for some local region"""
@@ -50,12 +45,15 @@ class VisualServo:
         return J
 
     def get_point(self):
+        """Returns position vector of the end effector"""
         return Matrix.from_array([[self.tracker.point[0,0]], [self.tracker.point[0,1]]])
 
     def get_goal(self):
+        """Returns position vector of the goal"""
         return Matrix.from_array([[self.tracker.goal[0,0]], [self.tracker.goal[0,1]]])
 
     def avg_pos(self):
+        """Finds average postion of end effector over 2 seconds"""
         values = []
         for i in range(20):
             values.append(self.get_point())
@@ -63,36 +61,20 @@ class VisualServo:
         return sum(values, start=Matrix(2, 1)) * (1/len(values))
 
     def avg_goal(self):
+        """Finds average postion of the goal over 2 seconds"""
         values = []
         for i in range(20):
             values.append(self.get_goal())
             sleep(0.1)
         return sum(values, start=Matrix(2, 1)) * (1/len(values))
 
-    def SubdividePath(self, size=20):
-
-        goal, cur, path = self.get_goal(), self.avg_pos(), []
-        error, point = goal - cur, cur 
-
-        slope = (goal[1][0]-cur[1][0])/(goal[0][0]-cur[0][0]) 
-        perpSlope = -1/(slope)
-        PathLength = error.vec_norm() # pixel lenght of path 
-
-        for i in range(len(PathLength%20)):
-            point += slope()
-            path.append()
-
-        return path 
-
-    def Plot(self):
-        pass
 
     def UncalibratedVisualServoing(self, THRESHOLD = 7):
         """
         Uses Newtons method and a byroden update to move end effector to goal pos 
         within a margin of threshold.
             ARGS: 
-                THRESHOLD (int): The pixel distance we need to be within
+                THRESHOLD (int): The pixel distance we need to be within before we stop
         """
 
         J = self.initJacobian()
@@ -106,8 +88,7 @@ class VisualServo:
                 print("Jacobian is singular")
                 J[0][0] += 0.01
                 J[1][1] += 0.01
-            # print("Jacobian")
-            # print(J)
+
             J_inv = J.TwoByTwoInverse()
             delta_x = J_inv*(res)
 
@@ -119,9 +100,7 @@ class VisualServo:
             if error < 15:
                 step_size = 2
             delta_x = delta_x.normalize().scale(step_size)
-            # print("Delta x")
-            # print(delta_x)
-            # breakpoint()
+
             self.server.sendAngles(delta_x[0][0], delta_x[1][0])
             sleep(0.5)
 
@@ -130,7 +109,6 @@ class VisualServo:
             cur = self.avg_pos()
             delta_y = cur-old
 
-
             # Update Jacobian 
             a = delta_y - (J*delta_x)
             b = a * delta_x.T
@@ -138,10 +116,8 @@ class VisualServo:
             J = J + c
             
             res = self.goal-cur
-            print('Distance from goal:', res.vec_norm())
-        breakpoint()
-        print("Done baby", res, res.vec_norm())
 
+        print("Done baby", res, res.vec_norm())
 
 
 def main():
