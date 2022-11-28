@@ -21,6 +21,9 @@ class Shape:
 		self.stroke_width = params.get('stroke-width', 1)
 		self.fill = params.get('fill', 'transparent')
 
+	def render_with(self, renderer: 'SVGRenderer'):
+		pass
+
 @dataclass
 class RectSVG(Shape):
 	x: float # top left corner
@@ -30,10 +33,13 @@ class RectSVG(Shape):
 
 	def __init__(self, params: Dict):
 		super().__init__(params)
-		self.x = float(params['x'])
-		self.y = float(params['y'])
+		self.x = float(params.get('x', 0))
+		self.y = float(params.get('y', 0))
 		self.width = float(params['width'])
 		self.height = float(params['height'])
+
+	def render_with(self, renderer: 'SVGRenderer'):
+		return renderer.render_rect(self)
 
 @dataclass
 class CircleSVG(Shape):
@@ -46,6 +52,9 @@ class CircleSVG(Shape):
 		self.center_x = float(params['cx'])
 		self.center_y = float(params['cy'])
 		self.radius = float(params['r'])
+
+	def render_with(self, renderer: 'SVGRenderer'):
+		return renderer.render_circle(self)
 
 @dataclass
 class EllipseSVG(Shape):
@@ -61,6 +70,9 @@ class EllipseSVG(Shape):
 		self.radius_x = float(params['rx'])
 		self.radius_y = float(params['ry'])
 
+	def render_with(self, renderer: 'SVGRenderer'):
+		return renderer.render_ellipse(self)
+
 @dataclass
 class LineSVG(Shape):
 	x1: float
@@ -75,6 +87,9 @@ class LineSVG(Shape):
 		self.x2 = float(params['x2'])
 		self.y2 = float(params['y2'])
 
+	def render_with(self, renderer: 'SVGRenderer'):
+		return renderer.render_line(self)
+
 @dataclass
 class PolyLineSVG(Shape):
 	points: List[Tuple[float, float]]
@@ -88,6 +103,9 @@ class PolyLineSVG(Shape):
 		for i in range(0, len(values), 2):
 			self.points.append((values[i], values[i + 1]))
 
+	def render_with(self, renderer: 'SVGRenderer'):
+		return renderer.render_polyline(self)
+
 @dataclass 
 class PolygonSVG(Shape):
 	points: List[Tuple[float, float]]
@@ -100,6 +118,9 @@ class PolygonSVG(Shape):
 			raise ValueError('Invalid number of values in polygon points')
 		for i in range(0, len(values), 2):
 			self.points.append((values[i], values[i + 1]))
+
+	def render_with(self, renderer: 'SVGRenderer'):
+		return renderer.render_polygon(self)
 
 @dataclass
 class PathCommand:
@@ -144,16 +165,48 @@ class PathSVG(Shape):
 		indent = '\n' + ' ' * 4
 		return base + indent + indent.join(map(str, self.commands))
 
+	def render_with(self, renderer: 'SVGRenderer'):
+		return renderer.render_path(self)
+
 @dataclass
 class SVG:
-	width: int
-	height: int
+	width: float
+	height: float
 	shapes: List[Shape] = field(default_factory=list)
 
 	def __repr__(self):
 		indent = '\n' + ' ' * 2
 		shapes = indent + indent.join(map(str, self.shapes))
 		return f'SVG(width={self.width}, height={self.height}, shapes={shapes})'
+
+
+class SVGRenderer():
+	"""
+	Interface for rendering SVG shapes using a visitor pattern.
+	"""
+	def __init__(self, svg: SVG):
+		self.svg = svg
+
+	def render_circle(self, circle: CircleSVG):
+		pass
+
+	def render_rect(self, rect: RectSVG):
+		pass
+
+	def render_ellipse(self, ellipse: EllipseSVG):
+		pass
+
+	def render_line(self, line: LineSVG):
+		pass
+
+	def render_polyline(self, polyline: PolyLineSVG):
+		pass
+
+	def render_polygon(self, polygon: PolygonSVG):
+		pass
+
+	def render_path(self, path: PathSVG):
+		pass
 
 shape_classes = {
 	'rect': RectSVG,
@@ -174,8 +227,16 @@ def parse_shape(element: ET.Element) -> Shape:
 def parse_svg(path: str):
 	tree = ET.parse(path)
 	root = tree.getroot()
-	width = int(root.attrib.get("width", '200'))
-	height = int(root.attrib.get("height", '200'))
+	width = height = 0
+	if 'viewBox' in root.attrib:
+		vals = [float(x) for x in root.attrib['viewBox'].split()]		
+		width = vals[2]
+		height = vals[3]
+	elif 'width' in root.attrib and 'height' in root.attrib:
+		width = float(root.attrib['width'])
+		height = float(root.attrib['height'])
+	else:
+		raise ValueError('SVG must have width and height or viewbox')
 	svg = SVG(width, height)
 	for child in root:
 		shape = parse_shape(child)

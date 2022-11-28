@@ -1,4 +1,4 @@
-from svg import PathCommand, PathSVG
+from svg import PathCommand, PathSVG, parse_svg
 
 def test_path_command():
 	command = PathCommand('m 1 2,3 4')
@@ -16,3 +16,9 @@ def test_path_svg():
 	assert path.commands[1].values == [40, 205, 50, 230]
 	assert path.commands[2].type == PathCommand.Type.StrungQuadraticBezier
 	assert path.commands[2].values == [90, 230]
+
+
+def test_can_parse_viewbox():
+	svg = parse_svg('svg_files/face.svg')
+	assert svg.width == 497.92
+	assert svg.height == 583.13
