@@ -46,33 +46,18 @@ class NumpyRenderer(SVGRenderer):
 		for command in path.commands:
 			if command.type == PathCommand.Type.Move:
 				points = np.vstack((points, [command.values]))
-				position = points[-1]
 			if command.type == PathCommand.Type.CubicBezier:
-				num_iters = len(command.values) // 6
-				for iteration in range(num_iters):
-					control_xs = [position[0]]
-					control_ys = [position[1]]
-					base_x = position[0] if command.relative else 0
-					base_y = position[1] if command.relative else 0
-					for i in range(3):
-						control_xs.append(command.values[2*i + 6*iteration] + base_x)
-						control_ys.append(command.values[2*i+1 + 6*iteration] + base_y)
+				control_xs = [position[0]]
+				control_ys = [position[1]]
+				base_x = position[0] if command.relative else 0
+				base_y = position[1] if command.relative else 0
+				for i in range(3):
+					control_xs.append(command.values[2*i] + base_x)
+					control_ys.append(command.values[2*i+1] + base_y)
 
+				new_points = self.cubic_bezier(control_xs, control_ys)
+				points = np.vstack((points, new_points))
 
-					t = np.linspace(0, 1, 20) # paramter 
-					t1 = (1-t)**3
-					t2 = 3*t*(1-t)**2
-					t3 = 3*t**2*(1-t)
-					t4 = t**3
-					xs = t1*control_xs[0] + t2*control_xs[1] + t3*control_xs[2]  + t4*control_xs[3]
-					ys = t1*control_ys[0] + t2*control_ys[1] + t3*control_ys[2]  + t4*control_ys[3]
-					new_points = np.stack((xs, ys), axis=1)
-					points = np.vstack((points, new_points))
-					last_position = position
-					position = points[-1]
-					# points = np.vstack((points, [position[0] + command.values[10], position[1] + command.values[11]]))
-					# position = points[-1]
-					# breakpoint()
 			if command.type == PathCommand.Type.StrungCubicBezier:
 				base_x = position[0] if command.relative else 0
 				base_y = position[1] if command.relative else 0
@@ -84,18 +69,12 @@ class NumpyRenderer(SVGRenderer):
 				first_control = position + (position - last_control)
 				control_xs = [position[0], first_control[0], base_x + command.values[0], end_x]
 				control_ys = [position[1], first_control[1], base_y + command.values[1], end_y]
-				t = np.linspace(0, 1, 20) # paramter 
-				t1 = (1-t)**3
-				t2 = 3*t*(1-t)**2
-				t3 = 3*t**2*(1-t)
-				t4 = t**3
-				xs = t1*control_xs[0] + t2*control_xs[1] + t3*control_xs[2]  + t4*control_xs[3]
-				ys = t1*control_ys[0] + t2*control_ys[1] + t3*control_ys[2]  + t4*control_ys[3]
-				new_points = np.stack((xs, ys), axis=1)
-				points = np.vstack((points, new_points))
-				last_position = position
-				position = points[-1]
 
+				new_points = self.cubic_bezier(control_xs, control_ys)
+				points = np.vstack((points, new_points))
+
+			last_position = position
+			position = points[-1]
 			last_command = command
 		return points
 

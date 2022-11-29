@@ -142,13 +142,22 @@ class PathCommand:
 	relative: bool
 	values: List[float]
 
-	def __init__(self, command: str):
+	@classmethod	
+	def from_command_str(cls, command: str) -> List['PathCommand']:
 		# first character is the command type
-		self.type = PathCommand.Type(command[0].upper())
-		self.relative = command[0].islower()
+		type = PathCommand.Type(command[0].upper())
+		relative = command[0].islower()
 		value_strings = re.findall(r'\-?\d*\.?\d*', command[1:])
 		# split on spaces and commas
-		self.values = [float(x) for x in value_strings if x != '']
+		values = [float(x) for x in value_strings if x != '']
+		commands = []
+		if type == PathCommand.Type.CubicBezier and len(values) > 6:
+			for i in range(len(values) // 6):
+				commands.append(PathCommand(type, relative, values[i * 6:(i + 1) * 6]))
+		else:
+			commands.append(PathCommand(type, relative, values))
+		return commands
+			
 
 @dataclass
 class PathSVG(Shape):
@@ -158,7 +167,9 @@ class PathSVG(Shape):
 		super().__init__(params)
 		description = params['d']
 		command_strings = re.findall(r'([a-zA-Z][^a-zA-Z]+)', description)
-		self.commands = [PathCommand(x) for x in command_strings]
+		self.commands = []
+		for command_str in command_strings:
+			self.commands.extend(PathCommand.from_command_str(command_str))
 
 	def __repr__(self):
 		base = super().__repr__()
