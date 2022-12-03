@@ -25,7 +25,7 @@ joints = [[4.05, 0, 6.75], [9, 0, 0], [-2.165, 0, 0.85],
           [15.8, 0, 0], [1.825, 0, 0.85], [0, 0, 0]]
 
 
-kin = ForwardKinematics()
+kin = ForwardKinematics(joints, origin)
 
 logical = kin.physicalToLogicalAngles(pose)
 Output = ["%.2f" % np.degrees(elem) for elem in logical]
@@ -33,7 +33,7 @@ print(Output)
 
 # test_pose = kin.logicalToPhysicalAngles(pose_new)
 
-pos = kin.getPos(logical, joints, origin)
+pos = kin.getPos(logical)
 print(pos[0:3])
 
 user = input("stop: ")

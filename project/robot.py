@@ -25,7 +25,7 @@ class Robot():
         self.kit.servo[5].set_pulse_width_range(400, 2400) # Wrist - 2
 
         # == forward kinematics == 
-        self.kin = ForwardKinematics()
+        self.kin = ForwardKinematics(self.joints, self.origin)
         
         # == move to start postion == 
         self.physical_angles = [1.570, 2.443, 2.094, 1.570, 2.792, 3.141] # ture acuator angles used to drive the model 

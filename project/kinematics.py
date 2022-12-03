@@ -43,17 +43,20 @@ class HomogeneousTransform():
 
 
 class ForwardKinematics():
-    def __init__(self):
+    def __init__(self, joint_lengths, origin) -> None:
         # == quadrilateral sides == 
         self.a, self.b = 2.5, 9
         self.c, self.d = 3.275, 9.825
+        self.joint_lengths = joint_lengths
+        self.origin = origin
 
 
-    def getPos(self, rotation, translation, origin):
+    def getPos(self, rotation):
         """applies Homogeneous Transformations to solve for the (x,y,z) pos of the end effector"""
-        
+
+        translation = self.joint_lengths
         # -- translation from origin to base of joint 0 -- 
-        Tb = HomogeneousTransform().translate(origin)
+        Tb = HomogeneousTransform().translate(self.origin)
 
         # -- translation, rotation corresponding to joint 0 -- 
         R0 = HomogeneousTransform().rotate('Z', rotation[0]) 
