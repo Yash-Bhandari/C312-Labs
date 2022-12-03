@@ -1,7 +1,7 @@
 from kinematics import ForwardKinematics
 import numpy as np
 
-def go_to_location(kin: ForwardKinematics, start_pose, goal, threshold=0.1):
+def pose_for_location(kin: ForwardKinematics, start_pose, goal, threshold=0.1):
 	# max_movement = 0.6 # the total movement of all arms must be less than .6 rads per step
 	pose = start_pose
 	while True:

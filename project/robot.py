@@ -2,6 +2,7 @@ import numpy as np
 from time import *
 from adafruit_servokit import ServoKit
 from kinematics import ForwardKinematics, InverseKinematics
+from inverse_kin import pose_for_location
 
 class Robot():
     def __init__(self):
@@ -51,8 +52,8 @@ class Robot():
             - pose in logical angles (rad)        
         """
 
-        # self.physical_angles = self.kin.logicalToPhysicalAngles(pose)
-        # self.logical_angles = pose
+        self.physical_angles = self.kin.logicalToPhysicalAngles(pose)
+        self.logical_angles = pose
         
         pose = [np.rad2deg(pose[i]) for i in range(6)]
 
@@ -63,6 +64,11 @@ class Robot():
         self.kit.servo[4].angle = pose[4]
         self.kit.servo[5].angle = pose[5]
 
+    def move2location(self, location):
+        """Move robot to a specified location"""
+        new_pose = pose_for_location(self.kin, self.logical_angles, location)
+        self.physical_angles = self.kin.logicalToPhysicalAngles(new_pose)
+        self.move2pose(new_pose)
 
     def getCurBrush(self):    
         """Returns to brush that is currently bing used"""
