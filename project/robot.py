@@ -47,7 +47,7 @@ class Robot():
 
 
     def move2pose(self, pose):
-        """physicaly moves the arm to spesified joint angles at a constant speed
+        """physicaly moves the arm to specified joint angles at a constant speed
         args:
             - pose in logical angles (rad)        
         """
