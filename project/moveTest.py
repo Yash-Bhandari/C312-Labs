@@ -7,33 +7,35 @@ import numpy as np
 arm = Robot()
 
 
-pose = [90, 140, 120, 90, 160, 180]
+pose = [180, 116.4, 90, 95, 160, 90] #116.4
+# pose = [1.571, 1.571, 1.571, 1.571, 2.793, 1.571]
 
+pose = [np.radians(pose[i]) for i in range(6)]
 
-# pose2 = [np.radians(pose[i]) for i in range(6)]
+arm.move2pose(pose)
 
+origin = [-8.35, 0, 2.6] 
 
-# arm.move2pose(pose2)
+# cheack [4.05, 0, 6.25]
 
+# joints = [[4.05, 0, 6.25], [0, 0, 9], [-0.85, 0, 2.165],
+#           [15.8, 0, 0], [1.825, 0, 0.85], [0, 0, 0]]
 
-joints = [[4,0,4.8],[0,0,9],[-0.5,0,2.04],
-          [16.68,0,0],[1.3,0,0.6],[1.6,0,6.8]]
+joints = [[4.05, 0, 6.75], [9, 0, 0], [-2.165, 0, 0.85],
+          [15.8, 0, 0], [1.825, 0, 0.85], [0, 0, 0]]
 
-
-
-start = time()
 
 kin = ForwardKinematics()
 
-pos = kin.getPos([1.5707963267948966, 2.443460952792061, 2.0943951023931953, 1.5707963267948966, 2.792526803190927, 3.141592653589793], joints)
+logical = kin.physicalToLogicalAngles(pose)
+Output = ["%.2f" % np.degrees(elem) for elem in logical]
+print(Output)
 
-end = time()
-print("time: ", end - start)
+# test_pose = kin.logicalToPhysicalAngles(pose_new)
 
-print(pos)
+pos = kin.getPos(logical, joints, origin)
+print(pos[0:3])
 
+user = input("stop: ")
 
-
-
-
-# arm.stopRobot()
+arm.stopRobot()

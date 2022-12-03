@@ -1,66 +1,89 @@
 import numpy as np 
+import copy
 
 class HomogeneousTransform():
     """maps cords from one frame into another"""
-    def __init__(self, theta, V) -> None:
-        self.V = V
-        self.theta = theta #values in range [-90, 90] 
+    def __init__(self) -> None:
         self.H = np.identity(4)
-        self.angleCorrection = [0,0,0,0,0,0]  #Still need to measure 
 
-    def transform(self, axisOfRot):
-        """Create homogeneous transform matrix"""
+    def translate(self, V):
+        """tranlate frame through vector V"""
+        self.H[0:3, 3] = V
+        return self.H
 
-        # Translate cordanite from s.t its origin is at V
-        self.H[0:3, 3] = self.V
-
-        # Change orntaion of frame by theta along spesified axis 
-        if axisOfRot == 'X': self.xRot()
-        elif axisOfRot == 'Y': self.yRot()
-        else: self.zRot()
+    def rotate(self, axis, theta):
+        """rotate frame about axis, through theta"""
+        if axis == 'X': 
+            self.xRot(theta)
+        elif axis == 'Y': 
+            self.yRot(theta)
+        elif axis == 'Z': 
+            self.zRot(theta)
 
         return self.H
 
-    def xRot(self):
+    def xRot(self, theta):
         """Rotate coordinate frame about x-axis"""
         self.H[0:3, 0:3] = np.array([[1, 0 ,0 ],
-                                    [0, np.cos(self.theta), -1*np.sin(self.theta)],
-                                    [0, np.sin(self.theta), np.cos(self.theta)]])
+                                    [0, np.cos(theta), -1*np.sin(theta)],
+                                    [0, np.sin(theta), np.cos(theta)]])
 
-    def yRot(self):
+    def yRot(self, theta):
         """Rotate coordinate frame about y-axis"""
-        self.H[0:3, 0:3] = np.array([[np.cos(self.theta), 0 , np.sin(self.theta)],
+        self.H[0:3, 0:3] = np.array([[np.cos(theta), 0 , np.sin(theta)],
                                     [0, 1, 0],
-                                    [-1*np.sin(self.theta), 0, np.cos(self.theta)]])
+                                    [-1*np.sin(theta), 0, np.cos(theta)]])
 
-    def zRot(self):
+    def zRot(self, theta):
         """Rotate coordinate frame about z-axis"""
-        self.H[0:3, 0:3] = np.array([[np.cos(self.theta), -1*np.sin(self.theta), 0],
-                                    [np.sin(self.theta), np.cos(self.theta), 0],
-                                    [0, 0, 1]])
+        self.H[0:3, 0:3] = np.array([[np.cos(theta), -1*np.sin(theta), 0],
+                                     [np.sin(theta), np.cos(theta), 0],
+                                     [0, 0, 1]])
 
 
-        
+
 class ForwardKinematics():
     def __init__(self):
         # == quadrilateral sides == 
-        self.a, self.b = 2, 9
-        self.c, self.d = 3.3, 9.7
+        self.a, self.b = 2.5, 9
+        self.c, self.d = 3.275, 9.825
 
 
-    def getPos(self, logical_angles, JointVec):
-        """applies homogunuse matrix transforms to solve for the (x,y,z) pos of the end effector"""
-        self.H0 = HomogeneousTransform(logical_angles[0], JointVec[0]).transform('Z')
-        self.H1 = HomogeneousTransform(logical_angles[1], JointVec[1]).transform('Y')
-        self.H2 = HomogeneousTransform(logical_angles[2], JointVec[2]).transform('Y')
-        self.H3 = HomogeneousTransform(logical_angles[3], JointVec[3]).transform('X')
-        self.H4 = HomogeneousTransform(logical_angles[4], JointVec[4]).transform('Y')
-        self.H5 = HomogeneousTransform(logical_angles[5], JointVec[5]).transform('X')
+    def getPos(self, rotation, translation, origin):
+        """applies Homogeneous Transformations to solve for the (x,y,z) pos of the end effector"""
+        
+        # -- translation from origin to base of joint 0 -- 
+        Tb = HomogeneousTransform().translate(origin)
 
-        self.H = self.H0 @ self.H1 @ self.H2 @ self.H3 @ self.H4 @ self.H5
+        # -- translation, rotation corresponding to joint 0 -- 
+        R0 = HomogeneousTransform().rotate('Z', rotation[0]) 
+        T0 = HomogeneousTransform().translate(translation[0]) 
+
+        # -- translation, rotation corresponding to joint 1 -- 
+        R1 = HomogeneousTransform().rotate('Y', rotation[1]) 
+        T1 = HomogeneousTransform().translate(translation[1])
+
+        # -- translation, rotation corresponding to joint 2 -- 
+        R2 = HomogeneousTransform().rotate('Y', rotation[2]) 
+        T2 = HomogeneousTransform().translate(translation[2]) 
+
+        # -- translation, rotation corresponding to joint 3 --
+        R3 = HomogeneousTransform().rotate('X', rotation[3]) 
+        T3 = HomogeneousTransform().translate(translation[3]) 
+
+        # -- translation, rotation corresponding to joint 4 --
+        R4 = HomogeneousTransform().rotate('Y', rotation[4]) 
+        T4 = HomogeneousTransform().translate(translation[4]) 
+
+        # -- translation, rotation corresponding to joint 5 --
+        R5 = HomogeneousTransform().rotate('Z', rotation[5]) 
+        T5 = HomogeneousTransform().translate(translation[5]) 
+
+        H = Tb @ R0 @ T0 @ R1 @ T1 @ R2 @ T2 @ R3 @ T3 @ R4 @ T4 #@ R5 @ T5 
+
 
         """Returns the (x,y,z) postion of the robot w.r.t the robots base"""
-        return self.H @ (np.array([0,0,0,1]).T)
+        return H @ np.array([0,0,0,1]).T
     
 
     def logicalToPhysicalAngles(self, logical_angles):
@@ -70,14 +93,13 @@ class ForwardKinematics():
         output:
             - Physical angle: ture acuator angles used to drive the model
         """
-        physical_angles = [logical_angles[i] for i in range(6)] 
+        physical_angles = logical_angles
 
         # == align elbow to shoulder frame == 
         physical_angles[2] += physical_angles[1]
 
         # == elbow correction (solve for betta given gamma) == 
-        print(np.pi-logical_angles[2])
-        physical_angles[2] = self.quadrilateralBeta(np.pi-logical_angles[2]) # beta w.r.t physical_angles[1]
+        physical_angles[2] = self.quadrilateralBeta(np.pi/2 + logical_angles[2]) # beta w.r.t physical_angles[1]
 
         # == align angle to servo axis == 
         physical_angles = [self.logicalToPhysicalAxis(physical_angles[i], i) for i in range(6)]
@@ -92,24 +114,65 @@ class ForwardKinematics():
         output: 
             - Logical angles: the angles used in the serial linkage model
         """
-        logical_angles = physical_angles
+        logical_angles = copy.deepcopy(physical_angles)
 
-        logical_angles = [self.logicalToPhysicalAxis(physical_angles[i], i) for i in range(6)]
+        logical_angles = [self.PhysicalToLogicalAxis(physical_angles[i], i) for i in range(6)]
 
-        # == align elbow to shoulder frame == 
-        logical_angles[2] -= logical_angles[1]
+        # == quadrilatera unique cases ==  
+        # -- case - 1 -- 
+        if (0 <= logical_angles[1] <= np.pi/2) and (np.pi <= logical_angles[2] <= 2*np.pi):
+            alpha_1 = np.pi - logical_angles[1]
+            alpha_2 = logical_angles[2] - np.pi
+            alpha_3 = logical_angles[1] - np.pi/2 
+            beta = alpha_1 + alpha_2
 
-        # == elbow correction (solve for gamma given beta)== 
-        logical_angles[2] = np.pi - self.quadrilateralGamma(physical_angles[2])
+        # -- case - 2 -- 
+        elif (np.pi/2 <= logical_angles[1] <= np.pi) and (np.pi <= logical_angles[2] <= 2*np.pi):
+            alpha_1 = np.pi - logical_angles[1]
+            alpha_2 = logical_angles[2] - np.pi
+            alpha_3 = -1*(logical_angles[1] - np.pi/2)
+            beta = alpha_1 + alpha_2
+
+        # -- case - 3 -- 
+        elif (0 <= logical_angles[1] <= np.pi/2) and (np.pi/2 <= logical_angles[2] <= np.pi):
+            alpha_1 = np.pi/2 - logical_angles[1]
+            alpha_2 = logical_angles[2] - np.pi/2
+            alpha_3 = alpha_1
+            beta = alpha_1 + alpha_2   
+
+        # -- case - 4 -- 
+        elif (np.pi/2 <= logical_angles[1] <= np.pi) and (np.pi/2 <= logical_angles[2] <= np.pi):
+            alpha_1 = np.pi- logical_angles[1]
+            alpha_2 = np.pi- logical_angles[2]
+            alpha_3 = -1*(logical_angles[1] - np.pi/2)
+            beta = alpha_1 - alpha_2   
+
+        gamma = self.quadrilateralGamma(beta)
+
+        logical_angles[2] = gamma # nice! 
+        logical_angles[1] = -1*logical_angles[1] # I think that this works 
 
         return logical_angles
 
 
     def logicalToPhysicalAxis(self, theta, joint): 
+        if joint == 1:
+            return theta + 0.4607669 # 26.4 deg
+        elif joint == 2:
+            return theta + 0.986111  # 56.5 deg
+
         return theta
 
     
-    def PhysicalToLogicalAxis(self, theta, joint): 
+    def PhysicalToLogicalAxis(self, theta, joint):
+        """aligns servo axes (physical) with model axes (logical)""" 
+        if joint == 0:
+            return theta - np.pi/2
+        elif joint == 1:
+            return theta - 0.4607669 # 26.4 deg
+        elif joint == 2:
+            return (np.pi - theta) + (np.pi/2 - 0.986111) + np.pi/2  # 56.5 deg
+            
         return theta
 
 
@@ -125,9 +188,9 @@ class ForwardKinematics():
     def quadrilateralBeta(self, gamma):
         """
         Uses binary serch to find a beta value that gives the desired gamma value
-        vars:
+        input:
             - gamma the gamma value that gives the desered elbow angle 
-        returns:
+        output:
             - beta (elbow servo angle)
         """
 
@@ -179,12 +242,12 @@ class ForwardKinematics():
 
     # def quadrilateralCalc(self, sides):
     #     beta = self.theta[1] + self.theta[2] + 90 + self.angleCorrection[1] + self.angleCorrection[2]
-    #     e = np.sqrt(a**2+b**2-2*a*b*np.cos(beta))
-    #     gamma_1 = np.arccos((b**2+e*2-a**2) / (2*b*e))
-    #     gamma_2 = np.arccos((d**2-c**2-e**2 / (2*c*e)))
+    #     e = np.sqrt(self.a**2+self.b**2-2*self.a*self.b*np.cos(beta))
+    #     gamma_1 = np.arccos((self.b**2+self.e*2-self.a**2) / (2*self.b*self.e))
+    #     gamma_2 = np.arccos((self.d**2-self.c**2-self.e**2 / (2*self.c*self.e)))
     #     gamma = gamma_1 + gamma_2
-    #     f = np.sqrt(b**2+c**2-2*b*c*np.cos(gamma))
-    #     alpha = np.arccos((a**2+d**2-f**2)/(2*d*a))
+    #     f = np.sqrt(self.b**2+self.c**2-2*self.b*self.c*np.cos(gamma))
+    #     alpha = np.arccos((self.a**2+self.d**2-self.f**2)/(2*self.d*self.a))
     #     delta = 360 - alpha - gamma - beta 
 
 
