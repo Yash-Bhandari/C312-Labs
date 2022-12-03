@@ -88,3 +88,9 @@ class Robot():
     def inversKin(self, cord):
         """G{x,y,z} cord of end effector find the joint angles needed"""
         pass
+
+    def print_status(self):
+        """Prints the current status of the robot"""
+        print('Logical Angles: ', self.logical_angles)
+        print('Physical Angles: ', self.physical_angles)
+        print('Location: ', self.kin.getPos(self.logical_angles))
