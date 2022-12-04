@@ -79,10 +79,10 @@ class ForwardKinematics():
         T4 = HomogeneousTransform().translate(translation[4]) 
 
         # -- translation, rotation corresponding to joint 5 --
-        R5 = HomogeneousTransform().rotate('Z', rotation[5]) 
+        R5 = HomogeneousTransform().rotate('X', rotation[5]) 
         T5 = HomogeneousTransform().translate(translation[5]) 
 
-        H = Tb @ R0 @ T0 @ R1 @ T1 @ R2 @ T2 @ R3 @ T3 @ R4 @ T4 #@ R5 @ T5 
+        H = Tb @ R0 @ T0 @ R1 @ T1 @ R2 @ T2 @ R3 @ T3 @ R4 @ T4 @ R5 @ T5 
 
 
         """Returns the (x,y,z) postion of the robot w.r.t the robots base"""
@@ -98,15 +98,42 @@ class ForwardKinematics():
         output:
             - Physical angle: ture acuator angles used to drive the model
         """
-        physical_angles = logical_angles
 
-        # == align elbow to shoulder frame == 
-        physical_angles[2] += physical_angles[1]
+        physical_angles = copy.deepcopy(logical_angles)
 
-        # == elbow correction (solve for betta given gamma) == 
-        physical_angles[2] = self.quadrilateralBeta(np.pi/2 + logical_angles[2]) # beta w.r.t physical_angles[1]
+        beta = self.quadrilateralBeta(logical_angles[2])
+        physical_angles[1] = -1*physical_angles[1] # I think that this works 
 
-        # == align angle to servo axis == 
+        # == quadrilatera unique cases ==  
+        # -- case - 1 -- 
+        if (0 <= logical_angles[1] <= np.pi/2) and (np.pi <= logical_angles[2] <= 2*np.pi):
+            alpha_1 = np.pi - logical_angles[1]
+            alpha_2 = logical_angles[2] - np.pi
+            alpha_3 = logical_angles[1] - np.pi/2 
+            beta = alpha_1 + alpha_2
+
+        # -- case - 2 -- 
+        elif (np.pi/2 <= logical_angles[1] <= np.pi) and (np.pi <= logical_angles[2] <= 2*np.pi):
+            alpha_1 = np.pi - logical_angles[1]
+            alpha_2 = logical_angles[2] - np.pi
+            alpha_3 = -1*(logical_angles[1] - np.pi/2)
+            beta = alpha_1 + alpha_2
+
+        # -- case - 3 -- 
+        elif (0 <= logical_angles[1] <= np.pi/2) and (np.pi/2 <= logical_angles[2] <= np.pi):
+            alpha_1 = np.pi/2 - logical_angles[1]
+            alpha_2 = logical_angles[2] - np.pi/2
+            alpha_3 = alpha_1
+            beta = alpha_1 + alpha_2   
+
+        # -- case - 4 -- 
+        elif (np.pi/2 <= logical_angles[1] <= np.pi) and (np.pi/2 <= logical_angles[2] <= np.pi):
+            alpha_1 = np.pi- logical_angles[1]
+            alpha_2 = np.pi- logical_angles[2]
+            alpha_3 = -1*(logical_angles[1] - np.pi/2)
+            beta = alpha_1 - alpha_2   
+
+        physical_angles[2] = beta 
         physical_angles = [self.logicalToPhysicalAxis(physical_angles[i], i) for i in range(6)]
 
         return physical_angles
@@ -155,17 +182,26 @@ class ForwardKinematics():
         gamma = self.quadrilateralGamma(beta)
 
         logical_angles[2] = gamma # nice! 
-        logical_angles[1] = -1*logical_angles[1] # I think that this works 
+        logical_angles[1] = -1*logical_angles[1] 
 
         return logical_angles
 
 
     def logicalToPhysicalAxis(self, theta, joint): 
-        if joint == 1:
+        """aligns model axes (logical) with servo axes (physical)""" 
+        if joint == 0:
+            return theta + np.pi/2
+        elif joint == 1:
             return theta + 0.4607669 # 26.4 deg
         elif joint == 2:
-            return theta + 0.986111  # 56.5 deg
-
+            return (np.pi + theta) - (np.pi/2 + 0.986111) - np.pi/2  # 56.5 deg
+        elif joint == 3:
+            return theta + 1.65806
+        elif joint == 4:
+            return theta + 2.18166
+        elif joint == 5:
+            return theta + np.pi
+            
         return theta
 
     
@@ -177,6 +213,12 @@ class ForwardKinematics():
             return theta - 0.4607669 # 26.4 deg
         elif joint == 2:
             return (np.pi - theta) + (np.pi/2 - 0.986111) + np.pi/2  # 56.5 deg
+        elif joint == 3:
+            return theta - 1.65806
+        elif joint == 4:
+            return theta - 2.18166
+        elif joint == 5:
+            return theta - np.pi
             
         return theta
 
