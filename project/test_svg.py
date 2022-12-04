@@ -1,7 +1,7 @@
 from svg import PathCommand, PathSVG, parse_svg
 
 def test_path_command():
-	command = PathCommand('m 1 2,3 4')
+	command = PathCommand.from_command_str('m 1 2,3 4')[0]
 	assert command.type == PathCommand.Type.Move
 	assert command.relative
 	assert command.values == [1, 2, 3, 4]
