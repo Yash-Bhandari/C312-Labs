@@ -115,3 +115,52 @@ class MatPlotLibRenderer(SVGRenderer):
 	def show(self):
 		plt.gca().invert_yaxis()
 		plt.show()
+
+def projection_matrix(slant: float, translation: np.ndarray):
+	"""
+	Input:
+		slant of the canvas (rad)
+		translation from the origin of the robot to the bottom left corner of the canvas
+	output:
+		3x3 matrix that maps from the image coordinates to the 3d coordinates
+	"""
+	matrix = np.zeros((3, 3))
+	matrix[:,2] = translation
+	matrix[0,1] = 1
+	matrix[1,0] = np.cos(slant)
+	matrix[2,0] = np.sin(slant)
+	# matrix = np.array([
+	# 	[0            , 1, translation[0]],
+	# 	[np.cos(slant), 0, translation[1]],
+	# 	[np.sin(slant), 0, translation[2]],
+	# ])
+	return matrix
+
+
+class PhysicalRenderer(SVGRender):
+	"""
+	This renderer draws an image on a physical canvas using the robotic arm.
+	"""
+
+	def __init__(self, svg: SVG, arm: RobotArm, **kwargs):
+		super().__init__(svg)
+		self.np_renderer = NumpyRenderer(svg)
+		self.arm = arm
+
+	def render_line(self, line: LineSVG):
+		points = self.np_renderer.render_line(line)
+		self.render_points(points)
+
+	def render_circle(self, circle: CircleSVG):
+		points = self.np_renderer.render_circle(circle)
+		self.render_points(points)
+
+	def render_path(self, path: PathSVG):
+		points = self.np_renderer.render_path(path)
+		self.render_points(points)
+
+	def render_points(self, points: np.ndarray):
+		projector = projection_matrix(0.5, np.array([0, 0, 0]))
+		for i in range(points.shape[0]):
+			location = projector @ np.array([points[i, 0], points[i, 1], 1])
+			self.arm.move2location(location)
