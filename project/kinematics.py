@@ -84,9 +84,11 @@ class ForwardKinematics():
 
         H = Tb @ R0 @ T0 @ R1 @ T1 @ R2 @ T2 @ R3 @ T3 @ R4 @ T4 @ R5 @ T5 
 
+
         """Returns the (x,y,z) postion of the robot w.r.t the robots base"""
         result = H @ np.array([0,0,0,1]).T
         return result[:3]
+
     
 
     def logicalToPhysicalAngles(self, logical_angles):
