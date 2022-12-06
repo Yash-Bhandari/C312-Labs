@@ -1,13 +1,10 @@
 from kinematics import ForwardKinematics
 import numpy as np
 
-def pose_for_location(kin: ForwardKinematics, start_pose, goal, threshold=0.01, retry_count = 5):
+def pose_for_location(kin: ForwardKinematics, start_pose, goal, threshold=0.01, retry_count = 7):
 	max_movement = 0.6 # the total movement of all arms must be less than .6 rads per step
 	pose = start_pose
-	jitter_size = 0
 	for attempt in range(retry_count):
-		# pose = start_pose + np.random.uniform(-jitter_size, jitter_size, 6)
-		np.clip(pose, 0, np.pi, out=pose)
 		for iter in range(100):
 			position = kin.getPos(pose)
 			delta_y = goal - position
@@ -30,7 +27,6 @@ def pose_for_location(kin: ForwardKinematics, start_pose, goal, threshold=0.01, 
 			direction = delta_x / magnitude
 			movement = direction * min(magnitude, max_movement)
 			pose += movement
-
 		pose = np.random.uniform(0, np.pi, 6)
 		print(f"Warning: IK did not converge. Randomizing starting pose")
 	return pose
