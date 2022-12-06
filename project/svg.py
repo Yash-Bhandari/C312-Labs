@@ -10,7 +10,7 @@ import re
 @dataclass
 class Shape:
 	# type: Literal['rect', 'circle', 'ellipse', 'line', 'polyline', 'polygon', 'path']
-	params: Dict = field(kw_only=True, repr=False)
+	params: Dict = field(repr=False)
 	stroke: str 
 	stroke_width: int 
 	fill: str 

@@ -13,6 +13,7 @@ ORIGIN = [-8.35, 0, 2.6]
 @pytest.mark.parametrize('goal', [
 	([10, 5, 10]),
 	([15, 8, 1]),
+	([10, 8, 1]),
 	([0, 1, 0]),
 	([0, 5, 10]),
 	([3, 10, 0]),
@@ -31,6 +32,7 @@ def test_pose_for_location(goal):
 	pose = pose_for_location(kin, start_pose, goal)
 	estimated_position = kin.getPos(pose)
 	assert np.allclose(estimated_position, goal, atol=0.1)
-	assert min(pose) >= 0
-	assert max(pose) <= math.pi
+	bounds = kin.jointLimitsLogical()
+	assert (pose >= bounds[0,:]).all()
+	assert (pose <= bounds[1,:]).all()
 	
