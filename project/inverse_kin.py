@@ -8,6 +8,7 @@ def generate_random_valid_angles(bounds):
 	for i in range(6):
 		angles.append(random.uniform(bounds[0,i], bounds[1,i]))
 	return np.array(angles)
+
 def pose_for_location(kin: ForwardKinematics, start_pose, goal, threshold=0.01, retry_count = 7):
 	max_movement = 0.6 # the total movement of all arms must be less than .6 rads per step
 	pose = start_pose
