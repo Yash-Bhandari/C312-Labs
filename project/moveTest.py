@@ -5,6 +5,8 @@ from inverse_kin import pose_for_location
 import numpy as np
 
 
+arm = Robot()
+
 origin = [-8.35, 0, 2.6] 
 
 joints = [[4.05, 0, 6.75], [9, 0, 0], [-2.165, 0, 0.85],
@@ -12,39 +14,54 @@ joints = [[4.05, 0, 6.75], [9, 0, 0], [-2.165, 0, 0.85],
 
 kin = ForwardKinematics(joints, origin)
 
-arm = Robot()
+moves = [[10, 5, 10],
+	[10, 8, 1],
+	[0, 1, 0],
+	[0, 5, 10],
+	[3, 10, 0],
+	[7, 1, 2],
+	[4, -5, 5],
+	[2, -5, 1],
+	[5, -10, 3],
+	[2, -5, 10]]
 
-physical_angles = [1.570, 2.443, 2.094, 1.570, 2.792, 3.141] # ture acuator angles used to drive the model 
-logical_angles = kin.physicalToLogicalAngles(physical_angles)
+for move in moves:
+    arm.move2location(move)
+    sleep(0.5)
 
-Output = ["%.2f" % np.degrees(elem) for elem in physical_angles]
-print("start_logical: ", Output)
+# arm = Robot()
 
-physical = kin.logicalToPhysicalAngles(logical_angles)
+# physical_angles = [1.570, 2.443, 2.094, 1.570, 2.792, 3.141] # ture acuator angles used to drive the model 
+# logical_angles = kin.physicalToLogicalAngles(physical_angles)
 
-Output = ["%.2f" % np.degrees(elem) for elem in physical]
-print("start_physical: ", Output)
+# Output = ["%.2f" % np.degrees(elem) for elem in physical_angles]
+# print("start_logical: ", Output)
 
-Output = ["%.2f" % np.degrees(elem) for elem in physical_angles]
-print("start_physical_real: ", Output)
+# physical = kin.logicalToPhysicalAngles(logical_angles)
 
+# Output = ["%.2f" % np.degrees(elem) for elem in physical]
+# print("start_physical: ", Output)
 
-start_pose = logical_angles
-goal = np.array([-3, 14.5, 3])
-
-
-logical = pose_for_location(kin, start_pose, goal)
-
-physical = kin.logicalToPhysicalAngles(logical)
+# Output = ["%.2f" % np.degrees(elem) for elem in physical_angles]
+# print("start_physical_real: ", Output)
 
 
-# Output = ["%.2f" % np.degrees(elem) for elem in logical]
+# start_pose = logical_angles
+# goal = np.array([-3, 14.5, 3])
+
+
+# logical = pose_for_location(kin, start_pose, goal)
+
+# physical = kin.logicalToPhysicalAngles(logical)
+
+
+# # Output = ["%.2f" % np.degrees(elem) for elem in logical]
+# # print("move to: ", Output)
+
+# Output = ["%.2f" % np.degrees(elem) for elem in physical]
 # print("move to: ", Output)
 
-Output = ["%.2f" % np.degrees(elem) for elem in physical]
-print("move to: ", Output)
-
-user = input("start: ")
+# user = input("start: ")
 
 # arm.move2pose(physical)
 
