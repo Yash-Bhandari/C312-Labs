@@ -101,40 +101,16 @@ class ForwardKinematics():
 
         physical_angles = copy.deepcopy(logical_angles)
 
-        beta = self.quadrilateralBeta(logical_angles[2])
-        physical_angles[1] = -1*physical_angles[1] # I think that this works 
+        physical_angles[1] *= -1 # I think that this works 
 
-        # == quadrilatera unique cases ==  
-        # -- case - 1 -- 
-        if (0 <= logical_angles[1] <= np.pi/2) and (np.pi <= logical_angles[2] <= 2*np.pi):
-            alpha_1 = np.pi - logical_angles[1]
-            alpha_2 = logical_angles[2] - np.pi
-            alpha_3 = logical_angles[1] - np.pi/2 
-            beta = alpha_1 + alpha_2
+        beta = self.quadrilateralBeta_arbitrary(physical_angles[2])
 
-        # -- case - 2 -- 
-        elif (np.pi/2 <= logical_angles[1] <= np.pi) and (np.pi <= logical_angles[2] <= 2*np.pi):
-            alpha_1 = np.pi - logical_angles[1]
-            alpha_2 = logical_angles[2] - np.pi
-            alpha_3 = -1*(logical_angles[1] - np.pi/2)
-            beta = alpha_1 + alpha_2
+        physical_angles[2] = beta + physical_angles[1]
 
-        # -- case - 3 -- 
-        elif (0 <= logical_angles[1] <= np.pi/2) and (np.pi/2 <= logical_angles[2] <= np.pi):
-            alpha_1 = np.pi/2 - logical_angles[1]
-            alpha_2 = logical_angles[2] - np.pi/2
-            alpha_3 = alpha_1
-            beta = alpha_1 + alpha_2   
 
-        # -- case - 4 -- 
-        elif (np.pi/2 <= logical_angles[1] <= np.pi) and (np.pi/2 <= logical_angles[2] <= np.pi):
-            alpha_1 = np.pi- logical_angles[1]
-            alpha_2 = np.pi- logical_angles[2]
-            alpha_3 = -1*(logical_angles[1] - np.pi/2)
-            beta = alpha_1 - alpha_2   
-
-        physical_angles[2] = beta 
         physical_angles = [self.logicalToPhysicalAxis(physical_angles[i], i) for i in range(6)]
+
+        physical_angles[2] *= -1
 
         return physical_angles
     
@@ -152,37 +128,39 @@ class ForwardKinematics():
 
         # == quadrilatera unique cases ==  
         # -- case - 1 -- 
-        if (0 <= logical_angles[1] <= np.pi/2) and (np.pi <= logical_angles[2] <= 2*np.pi):
-            alpha_1 = np.pi - logical_angles[1]
-            alpha_2 = logical_angles[2] - np.pi
-            alpha_3 = logical_angles[1] - np.pi/2 
-            beta = alpha_1 + alpha_2
+        # if (0 <= logical_angles[1] <= np.pi/2) and (np.pi <= logical_angles[2] <= 2*np.pi):
+        #     alpha_1 = np.pi - logical_angles[1]
+        #     alpha_2 = logical_angles[2] - np.pi
+        #     alpha_3 = logical_angles[1] - np.pi/2 
+        #     beta = alpha_1 + alpha_2
 
-        # -- case - 2 -- 
-        elif (np.pi/2 <= logical_angles[1] <= np.pi) and (np.pi <= logical_angles[2] <= 2*np.pi):
-            alpha_1 = np.pi - logical_angles[1]
-            alpha_2 = logical_angles[2] - np.pi
-            alpha_3 = -1*(logical_angles[1] - np.pi/2)
-            beta = alpha_1 + alpha_2
+        # # -- case - 2 -- 
+        # elif (np.pi/2 <= logical_angles[1] <= np.pi) and (np.pi <= logical_angles[2] <= 2*np.pi):
+        #     alpha_1 = np.pi - logical_angles[1]
+        #     alpha_2 = logical_angles[2] - np.pi
+        #     alpha_3 = -1*(logical_angles[1] - np.pi/2)
+        #     beta = alpha_1 + alpha_2
 
-        # -- case - 3 -- 
-        elif (0 <= logical_angles[1] <= np.pi/2) and (np.pi/2 <= logical_angles[2] <= np.pi):
-            alpha_1 = np.pi/2 - logical_angles[1]
-            alpha_2 = logical_angles[2] - np.pi/2
-            alpha_3 = alpha_1
-            beta = alpha_1 + alpha_2   
+        # # -- case - 3 -- 
+        # elif (0 <= logical_angles[1] <= np.pi/2) and (np.pi/2 <= logical_angles[2] <= np.pi):
+        #     alpha_1 = np.pi/2 - logical_angles[1]
+        #     alpha_2 = logical_angles[2] - np.pi/2
+        #     alpha_3 = alpha_1
+        #     beta = alpha_1 + alpha_2   
 
-        # -- case - 4 -- 
-        elif (np.pi/2 <= logical_angles[1] <= np.pi) and (np.pi/2 <= logical_angles[2] <= np.pi):
-            alpha_1 = np.pi- logical_angles[1]
-            alpha_2 = np.pi- logical_angles[2]
-            alpha_3 = -1*(logical_angles[1] - np.pi/2)
-            beta = alpha_1 - alpha_2   
+        # # -- case - 4 -- 
+        # elif (np.pi/2 <= logical_angles[1] <= np.pi) and (np.pi/2 <= logical_angles[2] <= np.pi):
+        #     alpha_1 = np.pi- logical_angles[1]
+        #     alpha_2 = np.pi- logical_angles[2]
+        #     alpha_3 = -1*(logical_angles[1] - np.pi/2)
+        #     beta = alpha_1 - alpha_2   
+
+        beta = logical_angles[2] - logical_angles[1]
 
         gamma = self.quadrilateralGamma(beta)
 
         logical_angles[2] = gamma # nice! 
-        logical_angles[1] = -1*logical_angles[1] 
+        logical_angles[1] *= -1
 
         return logical_angles
 
@@ -194,7 +172,7 @@ class ForwardKinematics():
         elif joint == 1:
             return theta + 0.4607669 # 26.4 deg
         elif joint == 2:
-            return (np.pi + theta) - (np.pi/2 + 0.986111) - np.pi/2  # 56.5 deg
+            return -2*np.pi + theta + 0.986111  # 56.5 deg
         elif joint == 3:
             return theta + 1.65806
         elif joint == 4:
@@ -212,7 +190,7 @@ class ForwardKinematics():
         elif joint == 1:
             return theta - 0.4607669 # 26.4 deg
         elif joint == 2:
-            return (np.pi - theta) + (np.pi/2 - 0.986111) + np.pi/2  # 56.5 deg
+            return 2*np.pi - theta - 0.986111  #(np.pi - theta) + (np.pi/2 - 0.986111) + np.pi/2  # 56.5 deg
         elif joint == 3:
             return theta - 1.65806
         elif joint == 4:
@@ -264,15 +242,14 @@ class ForwardKinematics():
         raise ValueError('No solution')
 
 
-    def quadrilateralBeta_arbitrary(self, beta, gamma):
+    def quadrilateralBeta_arbitrary(self, gamma, error = 0.001):
         """Uses binary serch to find a beta value that gives the desired gamma value"""
         low, high = np.pi/32, np.pi
-        error = 0.000000001
-    
+
         while low <= high:
             mid = (high + low) / 2
 
-            gamma_aprox = self.quadrilateralGamma(beta[mid])
+            gamma_aprox = self.quadrilateralGamma(mid)
             res = abs(gamma_aprox-gamma)
 
             if gamma_aprox > gamma and res >= error:
