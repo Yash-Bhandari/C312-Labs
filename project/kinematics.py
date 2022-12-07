@@ -144,35 +144,6 @@ class ForwardKinematics():
 
         logical_angles = [self.PhysicalToLogicalAxis(physical_angles[i], i) for i in range(6)]
 
-        # == quadrilatera unique cases ==  
-        # -- case - 1 -- 
-        # if (0 <= logical_angles[1] <= np.pi/2) and (np.pi <= logical_angles[2] <= 2*np.pi):
-        #     alpha_1 = np.pi - logical_angles[1]
-        #     alpha_2 = logical_angles[2] - np.pi
-        #     alpha_3 = logical_angles[1] - np.pi/2 
-        #     beta = alpha_1 + alpha_2
-
-        # # -- case - 2 -- 
-        # elif (np.pi/2 <= logical_angles[1] <= np.pi) and (np.pi <= logical_angles[2] <= 2*np.pi):
-        #     alpha_1 = np.pi - logical_angles[1]
-        #     alpha_2 = logical_angles[2] - np.pi
-        #     alpha_3 = -1*(logical_angles[1] - np.pi/2)
-        #     beta = alpha_1 + alpha_2
-
-        # # -- case - 3 -- 
-        # elif (0 <= logical_angles[1] <= np.pi/2) and (np.pi/2 <= logical_angles[2] <= np.pi):
-        #     alpha_1 = np.pi/2 - logical_angles[1]
-        #     alpha_2 = logical_angles[2] - np.pi/2
-        #     alpha_3 = alpha_1
-        #     beta = alpha_1 + alpha_2   
-
-        # # -- case - 4 -- 
-        # elif (np.pi/2 <= logical_angles[1] <= np.pi) and (np.pi/2 <= logical_angles[2] <= np.pi):
-        #     alpha_1 = np.pi- logical_angles[1]
-        #     alpha_2 = np.pi- logical_angles[2]
-        #     alpha_3 = -1*(logical_angles[1] - np.pi/2)
-        #     beta = alpha_1 - alpha_2   
-
         beta = logical_angles[2] - logical_angles[1]
 
         gamma = self.quadrilateralGamma(beta)
