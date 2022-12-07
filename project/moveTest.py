@@ -14,20 +14,14 @@ joints = [[4.05, 0, 6.75], [9, 0, 0], [-2.165, 0, 0.85],
 
 kin = ForwardKinematics(joints, origin)
 
-moves = [[10, 5, 10],
-	[10, 8, 1],
-	[0, 1, 0],
-	[0, 5, 10],
-	[3, 10, 0],
-	[7, 1, 2],
-	[4, -5, 5],
-	[2, -5, 1],
-	[5, -10, 3],
-	[2, -5, 10]]
 
-for move in moves:
-    arm.move2location(move)
-    sleep(0.5)
+physical_angles = [90, 90, 90, 98, 40, 0] # true acuator angles used to drive the model 
+
+physical_angles = [np.radians(i) for i in physical_angles]
+
+logical_angles = kin.physicalToLogicalAngles(physical_angles) # the angles used in the serial linkage model
+
+arm.move2pose(logical_angles)
 
 # arm = Robot()
 
@@ -108,4 +102,4 @@ for move in moves:
 
 user = input("stop: ")
 
-arm.stopRobot()
+# arm.stopRobot()

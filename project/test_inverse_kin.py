@@ -35,4 +35,3 @@ def test_pose_for_location(goal):
 	bounds = kin.jointLimitsLogical()
 	assert (pose >= bounds[0,:]).all()
 	assert (pose <= bounds[1,:]).all()
-	

@@ -163,7 +163,7 @@ class ForwardKinematics():
         elif joint == 2:
             return -2*np.pi + theta + 0.986111  # 56.5 deg
         elif joint == 3:
-            return theta + 1.65806
+            return theta + 1.71042
         elif joint == 4:
             return theta + 2.18166
         elif joint == 5:
@@ -181,7 +181,7 @@ class ForwardKinematics():
         elif joint == 2:
             return 2*np.pi - theta - 0.986111  #(np.pi - theta) + (np.pi/2 - 0.986111) + np.pi/2  # 56.5 deg
         elif joint == 3:
-            return theta - 1.65806
+            return theta - 1.71042
         elif joint == 4:
             return theta - 2.18166
         elif joint == 5:

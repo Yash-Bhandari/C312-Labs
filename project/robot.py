@@ -48,17 +48,19 @@ class Robot():
         print('Shuting down robot')
 
 
-    def move2pose(self, pose):
+    def move2pose(self, pose, physical=False):
         """physicaly moves the arm to specified joint angles at a constant speed
         args:
             - pose in logical angles (rad)        
         """
+        if physical:
+            pose = self.kin.physicalToLogicalAngles(pose)
         print("pose: ", pose)
         self.physical_angles = self.kin.logicalToPhysicalAngles(pose)
         print("physical_angles: ", self.physical_angles)
         self.logical_angles = pose
         
-        pose = [np.degrees(self.physical_angles[i]%np.pi) for i in range(6)]
+        pose = [np.degrees(self.physical_angles[i]) for i in range(6)]
 
         self.kit.servo[0].angle = pose[0]
         self.kit.servo[1].angle = pose[1]
@@ -94,6 +96,9 @@ class Robot():
 
     def print_status(self):
         """Prints the current status of the robot"""
-        print('Logical Angles: ', self.logical_angles)
-        print('Physical Angles: ', self.physical_angles)
+        def format_angles(angles):
+            degrees = [int(angle / np.pi * 180) for angle in angles]
+            return degrees
+        print('Logical Angles: ', format_angles(self.logical_angles))
+        print('Physical Angles: ', format_angles(self.physical_angles))
         print('Location: ', self.kin.getPos(self.logical_angles))

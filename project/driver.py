@@ -22,7 +22,7 @@ def terminal():
 			for i, value in enumerate(command.split()[1:]):
 				if value != '-':
 					angles[i] = int(value) * np.pi / 180
-			arm.move2pose(angles)
+			arm.move2pose(angles, physical=True)
 		else:
 			print("Invalid command")
 			continue
@@ -40,4 +40,4 @@ def draw():
 	# renderer.show()
 
 if __name__ == "__main__":
-	draw()
+	terminal()

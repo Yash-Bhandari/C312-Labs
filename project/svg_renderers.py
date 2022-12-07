@@ -3,6 +3,7 @@ from robot import Robot
 import numpy as np
 from math import pi
 from config import CanvasDims, CANVAS
+import time
 from dataclasses import dataclass
 try:
 	import matplotlib.pyplot as plt
@@ -194,5 +195,5 @@ class PhysicalRenderer(SVGRenderer):
 		for i in range(points.shape[0]):
 			location = self.converter.image_to_3d(points[i])
 			print('moving to', location)
-			breakpoint()
+			time.sleep(0.5)
 			self.arm.move2location(location)
