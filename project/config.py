@@ -1,14 +1,37 @@
-# == set origin == 
-ORIGIN = [-8.35, 0, 2.6] 
+from dataclasses import dataclass
+WORLD = [-8.35, 0, 2.6] 
 
 # == joint measurements (cm) == 
-JOINTS = [[4.05, 0, 6.75], [0, 0, 9], [-0.85, 0, 2.165],
-                [15.8, 0, 0], [1.825, 0, 0.85], [1.55, 0, -6.75]]
+JOINTS = [[4.05, 0, 6.75], [9, 0, 0], [-2.165, 0, 0.85],
+        [15.8, 0, 0], [1.825, 0, 0.85], [1.55, 0, -6.75]]
 
-# == cup coordinates == 
+# == cup coordinates (cm) == 
 L_CUP_0 = [-3.1, 14.2, -5.7]
-L_CUP_1 = [-9.5, ]
+L_CUP_1 = [-9.5, 14.2, -5.7]
 
-R_CUP_0 = []
-R_CUP_1 = []
+R_CUP_0 = [-3.1, -14.2, -5.7]
+R_CUP_1 = [-9.5, -14.2, -5.7]
 
+# == canvas (cm) == 
+CANVAS_ANGLE = 0.4904375 #rads (28.1 deg)
+CANVAS_BL = [25, 14.5, 11]
+CANVAS_BR = [25, -14.5, ]
+CANVAS_FL = [6, 14.5, 0]
+CANVAS_FR = [6, -14.5, 0]
+
+
+
+@dataclass
+class CanvasDims:
+	"""
+	Represents the dimensions of the canvas
+	"""
+	width: float # cm
+	height: float # cm
+	x_offset: float # cm
+	y_offset: float # cm
+	z_offset: float # cm
+	slant: float # degrees
+
+
+CANVAS = CanvasDims(30, 24, 6, 14.5, 0.2, 28.1)

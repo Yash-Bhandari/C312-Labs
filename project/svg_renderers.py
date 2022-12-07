@@ -2,6 +2,7 @@ from svg import Shape, RectSVG, CircleSVG, EllipseSVG, LineSVG, PolyLineSVG, Pol
 from robot import Robot
 import numpy as np
 from math import pi
+from config import CanvasDims, CANVAS
 import matplotlib.pyplot as plt
 from dataclasses import dataclass
 
@@ -119,22 +120,6 @@ class MatPlotLibRenderer(SVGRenderer):
 		plt.show()
 
 
-@dataclass
-class CanvasDims:
-	"""
-	Represents the dimensions of the canvas
-	"""
-	width: float # cm
-	height: float # cm
-	x_offset: float # cm
-	y_offset: float # cm
-	z_offset: float # cm
-	slant: float # degrees
-
-	def get_3d_coords(self, x: float, y: float):
-		"""
-		Returns the 3d coordinates of a point on the canvas
-		"""
 
 class ImageTo3D:
 	def __init__(self, canvas: CanvasDims, svg: SVG):
@@ -151,10 +136,11 @@ class ImageTo3D:
 			3x3 matrix that maps from the image coordinates to the 3d coordinates
 		"""
 		matrix = np.zeros((3, 3))
+		slant = self.canvas.slant * np.pi / 180
 		matrix[:,2] = np.array([self.canvas.x_offset, self.canvas.y_offset, self.canvas.z_offset])
 		matrix[0,1] = 1
-		matrix[1,0] = np.cos(self.canvas.slant)
-		matrix[2,0] = np.sin(self.canvas.slant)
+		matrix[1,0] = np.cos(slant)
+		matrix[2,0] = np.sin(slant)
 		# matrix = np.array([
 		# 	[0            , 1, x_offset],
 		# 	[np.cos(slant), 0, y_offset],
@@ -175,7 +161,7 @@ class PhysicalRenderer(SVGRenderer):
 	This renderer draws an image on a physical canvas using the robotic arm.
 	"""
 
-	def __init__(self, svg: SVG, arm: RobotArm, canvas: CanvasDims=None, **kwargs):
+	def __init__(self, svg: SVG, arm: RobotArm, canvas: CanvasDims=CANVAS, **kwargs):
 		super().__init__(svg)
 		self.np_renderer = NumpyRenderer(svg)
 		self.arm = arm
