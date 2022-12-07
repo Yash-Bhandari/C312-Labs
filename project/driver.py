@@ -1,4 +1,6 @@
 from robot import Robot
+from svg import parse_svg
+from svg_renderers import PhysicalRenderer
 import numpy as np
 import time
 
@@ -23,5 +25,12 @@ def terminal():
 		time.sleep(3)
 		arm.print_status()
 
+def draw():
+	svg = parse_svg('svg_files/face.svg')
+	arm = Robot()
+	renderer = PhysicalRenderer(svg, arm)
+	for shape in svg.shapes:
+		shape.render_with(renderer)
+
 if __name__ == "__main__":
-	terminal()
+	draw()
