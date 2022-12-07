@@ -1,6 +1,9 @@
 import numpy as np 
 from time import *
-from adafruit_servokit import ServoKit
+try:
+    from adafruit_servokit import ServoKit
+except ImportError:
+    pass
 from kinematics import ForwardKinematics, InverseKinematics
 from inverse_kin import pose_for_location
 

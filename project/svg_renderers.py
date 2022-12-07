@@ -3,8 +3,11 @@ from robot import Robot
 import numpy as np
 from math import pi
 from config import CanvasDims, CANVAS
-import matplotlib.pyplot as plt
 from dataclasses import dataclass
+try:
+	import matplotlib.pyplot as plt
+except ImportError:
+	plt = None
 
 class NumpyRenderer(SVGRenderer):
 	"""
@@ -125,6 +128,7 @@ class ImageTo3D:
 	def __init__(self, canvas: CanvasDims, svg: SVG):
 		self.canvas = canvas
 		self.svg = svg
+		self.translation = np.array([self.canvas.x_offset, self.canvas.y_offset, self.canvas.z_offset])
 		self.matrix = self.projection_matrix()
 
 	def projection_matrix(self):
@@ -136,7 +140,7 @@ class ImageTo3D:
 			3x3 matrix that maps from the image coordinates to the 3d coordinates
 		"""
 		matrix = np.zeros((3, 3))
-		slant = self.canvas.slant * np.pi / 180
+		slant = self.canvas.slant
 		matrix[:,2] = np.array([self.canvas.x_offset, self.canvas.y_offset, self.canvas.z_offset])
 		matrix[0,1] = 1
 		matrix[1,0] = np.cos(slant)
@@ -153,15 +157,22 @@ class ImageTo3D:
 		Converts a point in the image (pixel coords) to a point in 3d space on
 		the canvas.
 		"""
-		scaled = point * self.canvas.width / self.svg.width
-		return self.matrix @ np.append(scaled, 1)
+		scaled = point.copy()
+		scaled[0] = scaled[0] / self.svg.width
+		scaled[1] = scaled[1] / self.svg.height
+		out = self.matrix[:,:2] @ scaled
+		out[0] *= self.canvas.height * np.cos(self.canvas.slant)
+		out[1] *= self.canvas.width
+		out[2] *= self.canvas.height * np.sin(self.canvas.slant)
+		out += self.translation
+		return out
 
 class PhysicalRenderer(SVGRenderer):
 	"""
 	This renderer draws an image on a physical canvas using the robotic arm.
 	"""
 
-	def __init__(self, svg: SVG, arm: RobotArm, canvas: CanvasDims=CANVAS, **kwargs):
+	def __init__(self, svg: SVG, arm: Robot, canvas: CanvasDims=CANVAS, **kwargs):
 		super().__init__(svg)
 		self.np_renderer = NumpyRenderer(svg)
 		self.arm = arm
@@ -182,4 +193,6 @@ class PhysicalRenderer(SVGRenderer):
 	def render_points(self, points: np.ndarray):
 		for i in range(points.shape[0]):
 			location = self.converter.image_to_3d(points[i])
+			print('moving to', location)
+			breakpoint()
 			self.arm.move2location(location)

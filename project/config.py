@@ -34,4 +34,4 @@ class CanvasDims:
 	slant: float # degrees
 
 
-CANVAS = CanvasDims(30, 24, 6, 14.5, 0.2, 28.1)
+CANVAS = CanvasDims(30, 24, 6, -14.5, 0.2, 0.4904375)

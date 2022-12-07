@@ -29,8 +29,11 @@ def draw():
 	svg = parse_svg('svg_files/face.svg')
 	arm = Robot()
 	renderer = PhysicalRenderer(svg, arm)
+	# renderer = MatPlotLibRenderer(svg)
 	for shape in svg.shapes:
+		print('Rendering shape', shape)
 		shape.render_with(renderer)
+	# renderer.show()
 
 if __name__ == "__main__":
 	draw()
