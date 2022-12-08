@@ -1,5 +1,6 @@
 import numpy as np 
 import copy
+import config
 
 class HomogeneousTransform():
     """maps cords from one frame into another"""
@@ -43,7 +44,7 @@ class HomogeneousTransform():
 
 
 class ForwardKinematics():
-    def __init__(self, joint_lengths, origin) -> None:
+    def __init__(self, joint_lengths=config.JOINTS, origin=config.WORLD) -> None:
         # == quadrilateral sides == 
         self.a, self.b = 2.5, 9
         self.c, self.d = 3.275, 9.825
