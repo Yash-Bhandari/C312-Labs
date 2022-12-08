@@ -205,7 +205,6 @@ class ForwardKinematics():
         bounds[3] = [np.pi / 3, 2 / 3 * np.pi]
         bounds[4] = [0, np.pi]
         bounds[5] = [np.pi / 3, 2 / 3 * np.pi]
-        print('Bounds:', bounds)
         return bounds
 
 

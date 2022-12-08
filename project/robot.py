@@ -31,7 +31,7 @@ class Robot():
         self.kin = ForwardKinematics(self.joints, self.origin)
         
         # == move to start postion == 
-        self.physical_angles = [1.570, 2.443, 2.094, 1.71042, 1.274, 1.48353] # ture acuator angles used to drive the model 
+        self.physical_angles = [1.570, 2.443, 2.094, 1.71042, 1.8, 1.48353] # ture acuator angles used to drive the model 
         self.logical_angles = self.kin.physicalToLogicalAngles(self.physical_angles) # the angles used in the serial linkage model
 
         self.move2pose(self.logical_angles)
