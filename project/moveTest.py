@@ -7,21 +7,27 @@ import numpy as np
 
 arm = Robot()
 
-origin = [-8.35, 0, 2.6] 
+origin = [-8.35, 0, 2.4] 
 
-joints = [[4.05, 0, 6.75], [9, 0, 0], [-2.165, 0, 0.85],
-          [15.8, 0, 0], [1.825, 0, 0.85], [1.55, 0, -6.75]]
+joints = [[4.05, 0, 6], [9, 0, 0], [-0.85, 0, 2.165],
+        [15.8, 0, 0], [1.825, 0, 0.85], [1, -6.75, 0]]
 
 kin = ForwardKinematics(joints, origin)
 
 
-physical_angles = [90, 90, 90, 98, 40, 0] # true acuator angles used to drive the model 
+physical_angles = [90, 100, 170, 98, 75, 0] # true acuator angles used to drive the model 
 
 physical_angles = [np.radians(i) for i in physical_angles]
 
 logical_angles = kin.physicalToLogicalAngles(physical_angles) # the angles used in the serial linkage model
 
 arm.move2pose(logical_angles)
+
+# physical_angles = [90, 100, 90, 98, 68, 0] # true acuator angles used to drive the model 
+
+# physical_angles = [np.radians(i) for i in physical_angles]
+
+# arm.move2pose(physical_angles, physical=True)
 
 # arm = Robot()
 
@@ -102,4 +108,4 @@ arm.move2pose(logical_angles)
 
 user = input("stop: ")
 
-# arm.stopRobot()
+arm.stopRobot()
