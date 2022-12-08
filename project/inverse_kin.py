@@ -36,6 +36,8 @@ def pose_for_location(kin: ForwardKinematics, start_pose, goal, threshold=0.01, 
 		if attempt != retry_count - 1:
 			pose = generate_random_valid_angles(kin)
 			print(f"Warning: IK did not converge. Randomizing starting pose")
+		else:
+			raise Exception(f"inverse kinematics failed. goal: {goal} closest: {position}") 
 	# assert kin.physicalToLogicalAngles(kin.logicalToPhysicalAngles(start_pose)) == start_pose
 	return kin.physicalToLogicalAngles(pose)
 		
