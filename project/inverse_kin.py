@@ -7,7 +7,7 @@ def generate_random_valid_angles(kin):
 	kin.jointLimitsPhysical(angles).T
 	return np.array(angles)
 
-def pose_for_location(kin: ForwardKinematics, start_pose, goal, threshold=0.01, retry_count = 7):
+def pose_for_location(kin: ForwardKinematics, start_pose, goal, threshold=0.1, retry_count = 7):
 	max_movement = 0.6 # the total movement of all arms must be less than .6 rads per step
 	pose = kin.logicalToPhysicalAngles(start_pose)
 	for attempt in range(retry_count):
@@ -21,7 +21,11 @@ def pose_for_location(kin: ForwardKinematics, start_pose, goal, threshold=0.01, 
 
 			jacobian = estimate_jacobian(kin, pose)
 			# solving for delta_x in J * delta_x = delta_y
-			delta_x = np.linalg.pinv(jacobian) @ delta_y
+			try:
+				delta_x = np.linalg.pinv(jacobian) @ delta_y
+			except np.linalg.LinAlgError:
+				breakpoint()
+				jacobian += np.random.uniform(-0.01, 0.01, 6)
 			# make sure we don't move past the joint limits
 			for i in range(len(delta_x)):
 				if pose[i] + delta_x[i] < bounds[0,i] or pose[i] + delta_x[i] > bounds[1,i]:
@@ -33,6 +37,9 @@ def pose_for_location(kin: ForwardKinematics, start_pose, goal, threshold=0.01, 
 				if pose[i] + delta_x[i] < bounds[0,i] or pose[i] + delta_x[i] > bounds[1,i]:
 					delta_x[i] = bounds[0,i] - pose[i]
 			pose += delta_x
+		if attempt == 0:
+			pose = np.array([1.570, 2.443, 2.094, 1.71042, 1.8, 1.48353])
+			print(f"Warning: IK did not converge. Trying again from start pose")
 		if attempt != retry_count - 1:
 			pose = generate_random_valid_angles(kin)
 			print(f"Warning: IK did not converge. Randomizing starting pose")
@@ -43,6 +50,8 @@ def pose_for_location(kin: ForwardKinematics, start_pose, goal, threshold=0.01, 
 		
 def estimate_jacobian(kin: ForwardKinematics, pose: np.ndarray):
 	y = kin.getPos(pose, physical=True)
+	if np.isnan(y := kin.getPos(pose, physical=True)).any():
+		pose += np.random.uniform(-0.01, 0.01, 6)
 	jacobian = np.zeros((3, 6), np.float64)
 	h = 0.0001
 	for i in range(len(pose)):
@@ -50,5 +59,8 @@ def estimate_jacobian(kin: ForwardKinematics, pose: np.ndarray):
 		y_new = kin.getPos(pose, physical=True)
 		pose[i] -= h
 		derivative = (y_new - y) / h
-		jacobian[:,i] = derivative
+		if np.isnan(derivative).any():
+			jacobian[:,i] = 0
+		else:
+			jacobian[:,i] = derivative
 	return jacobian

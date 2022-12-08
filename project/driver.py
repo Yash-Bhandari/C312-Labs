@@ -26,17 +26,19 @@ def terminal():
 		else:
 			print("Invalid command")
 			continue
-		time.sleep(3)
 		arm.print_status()
 
 def draw():
-	svg = parse_svg('svg_files/face.svg')
+	svg = parse_svg('svg_files/duck.svg')
 	arm = Robot()
 	renderer = PhysicalRenderer(svg, arm)
 	# renderer = MatPlotLibRenderer(svg, in_3d=True)
 	for shape in svg.shapes:
+		arm.goToStartingPose()
+		arm.dipPaint()
 		print('Rendering shape', shape)
 		shape.render_with(renderer)
+	arm.goToStartingPose()
 	# renderer.show()
 
 if __name__ == "__main__":

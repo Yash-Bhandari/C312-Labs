@@ -36,6 +36,14 @@ class NumpyRenderer(SVGRenderer):
 		points = np.stack((xs, ys), axis=1)
 		return self.prune_points(points)
 
+	def render_ellipse(self, shape: EllipseSVG):
+		theta = np.linspace(0, 2 * pi, self.num_points)
+		xs = np.cos(theta) * shape.x_radius + shape.center_x
+		ys = np.sin(theta) * shape.y_radius + shape.center_y
+		points = np.stack((xs, ys), axis=1)
+		return self.prune_points(points)
+
+
 	def cubic_bezier(self, control_xs, control_ys, num_points=80):
 		t = np.linspace(0, 1, num_points) # parameter 
 		t1 = (1-t)**3
@@ -128,6 +136,10 @@ class MatPlotLibRenderer(SVGRenderer):
 		points = self.np_renderer.render_circle(circle)
 		# plot should always be the same size:
 		dimension = int(max(self.svg.width, self.svg.height))
+		self.render_points(points)
+
+	def render_ellipse(self, ellipse: EllipseSVG):
+		points = self.np_renderer.render_ellipse(ellipse)
 		self.render_points(points)
 
 	def render_path(self, path: PathSVG):
@@ -229,6 +241,10 @@ class PhysicalRenderer(SVGRenderer):
 		points = self.np_renderer.render_circle(circle)
 		self.render_points(points)
 
+	def render_ellipse(self, ellipse: EllipseSVG):
+		points = self.np_renderer.render_ellipse(ellipse)
+		self.render_points(points)
+
 	def render_path(self, path: PathSVG):
 		points = self.np_renderer.render_path(path)
 		self.render_points(points)
@@ -237,5 +253,4 @@ class PhysicalRenderer(SVGRenderer):
 		for i in range(points.shape[0]):
 			location = self.converter.image_to_3d(points[i])
 			print('moving to', location)
-			time.sleep(0.5)
 			self.arm.move2location(location)

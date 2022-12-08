@@ -103,6 +103,7 @@ class ForwardKinematics():
         physical_angles = copy.deepcopy(logical_angles)
 
         physical_angles[1] *= -1 # I think that this works 
+        physical_angles[4] *= -1 # I think that this works 
 
         beta = self.quadrilateralBeta_arbitrary(physical_angles[2])
 
@@ -133,6 +134,7 @@ class ForwardKinematics():
 
         logical_angles[2] = gamma # nice! 
         logical_angles[1] *= -1
+        logical_angles[4] *= -1
 
         return logical_angles
 
@@ -148,9 +150,9 @@ class ForwardKinematics():
         elif joint == 3:
             return theta + 1.71042
         elif joint == 4:
-            return theta + 1.309
+            return theta + 1.274
         elif joint == 5:
-            return theta 
+            return theta + 1.48353
             
         return theta
 
@@ -166,9 +168,9 @@ class ForwardKinematics():
         elif joint == 3:
             return theta - 1.71042
         elif joint == 4:
-            return theta - 1.309
+            return theta - 1.274
         elif joint == 5:
-            return theta 
+            return theta - 1.48353
             
         return theta
 
@@ -187,24 +189,22 @@ class ForwardKinematics():
 
         delta = np.radians(56.5-24.6)
         little_wiggle = np.radians(38)
-        big_wiggle = np.radians(24)
+        big_wiggle = np.radians(85)
 
         upper = np.pi
         lower = 0
-
         if joints1+little_wiggle > (np.pi - delta):
             upper = np.pi - (joints1 - (np.pi-delta)) - little_wiggle
 
-        else:
+        if joints1-big_wiggle < (np.pi - delta):
             lower = (np.pi-delta) - joints1 + big_wiggle
 
         bounds[0] = [0, np.pi]
         bounds[1] = [0, np.pi]
         bounds[2] = [lower, upper]
-        bounds[3] = [0, np.pi]
+        bounds[3] = [np.pi / 3, 2 / 3 * np.pi]
         bounds[4] = [0, np.pi]
-        bounds[5] = [0, np.pi]
-
+        bounds[5] = [np.pi / 3, 2 / 3 * np.pi]
         return bounds
 
 
