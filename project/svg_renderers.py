@@ -38,8 +38,8 @@ class NumpyRenderer(SVGRenderer):
 
 	def render_ellipse(self, shape: EllipseSVG):
 		theta = np.linspace(0, 2 * pi, self.num_points)
-		xs = np.cos(theta) * shape.x_radius + shape.center_x
-		ys = np.sin(theta) * shape.y_radius + shape.center_y
+		xs = np.cos(theta) * shape.radius_x + shape.center_x
+		ys = np.sin(theta) * shape.radius_y + shape.center_y
 		points = np.stack((xs, ys), axis=1)
 		return self.prune_points(points)
 
