@@ -12,9 +12,9 @@ def generate_random_valid_angles(bounds):
 def pose_for_location(kin: ForwardKinematics, start_pose, goal, threshold=0.01, retry_count = 7):
 	max_movement = 0.6 # the total movement of all arms must be less than .6 rads per step
 	pose = kin.logicalToPhysicalAngles(start_pose)
-	# bounds = kin.jointLimitsLogical()
 	bounds = np.row_stack((np.zeros(6), np.ones(6) * np.pi))
 	for attempt in range(retry_count):
+		# bounds = kin.jointLimitsLogical()
 		for iter in range(100):
 			position = kin.getPos(pose, physical=True)
 			delta_y = goal - position

@@ -31,6 +31,21 @@ logical_angles = kin.physicalToLogicalAngles(physical_angles) # the angles used 
 
 arm.move2pose(logical_angles)
 
+def goto_phys(angles):
+    angles = [np.radians(i) for i in angles]
+    logical_angles = kin.physicalToLogicalAngles(angles)
+    arm.move2pose(logical_angles)
+    sleep(1)
+    arm.print_status()
+
+def goto_logical(angles):
+    angles = [np.radians(i) for i in angles]
+    arm.move2pose(angles)
+    sleep(1)
+    arm.print_status()
+
+goto_phys([90, 100, 170, 98, 75, 0])
+
 # physical_angles = [90, 100, 90, 98, 68, 0] # true acuator angles used to drive the model 
 
 # physical_angles = [np.radians(i) for i in physical_angles]
