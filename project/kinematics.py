@@ -51,9 +51,10 @@ class ForwardKinematics():
         self.origin = origin
 
 
-    def getPos(self, rotation):
+    def getPos(self, rotation, physical=False):
         """applies Homogeneous Transformations to solve for the (x,y,z) pos of the end effector"""
-
+        if physical:
+            rotation = self.physicalToLogicalAngles(rotation)
         translation = self.joint_lengths
         # -- translation from origin to base of joint 0 -- 
         Tb = HomogeneousTransform().translate(self.origin)
