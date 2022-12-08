@@ -31,13 +31,13 @@ def terminal():
 
 def draw():
 	svg = parse_svg('svg_files/face.svg')
-	# arm = Robot()
-	# renderer = PhysicalRenderer(svg, arm)
-	renderer = MatPlotLibRenderer(svg, in_3d=True)
+	arm = Robot()
+	renderer = PhysicalRenderer(svg, arm)
+	# renderer = MatPlotLibRenderer(svg, in_3d=True)
 	for shape in svg.shapes:
 		print('Rendering shape', shape)
 		shape.render_with(renderer)
-	renderer.show()
+	# renderer.show()
 
 if __name__ == "__main__":
-	terminal()
+	draw()

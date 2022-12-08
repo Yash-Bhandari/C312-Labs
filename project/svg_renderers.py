@@ -236,4 +236,4 @@ class PhysicalRenderer(SVGRenderer):
 			location = self.converter.image_to_3d(points[i])
 			print('moving to', location)
 			time.sleep(0.5)
-			# self.arm.move2location(location)
+			self.arm.move2location(location)
