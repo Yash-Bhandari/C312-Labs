@@ -155,8 +155,7 @@ class MatPlotLibRenderer(SVGRenderer):
 		
 
 	def show(self):
-		if not self.converter:
-			plt.gca().invert_yaxis()
+		plt.gca().invert_yaxis()
 		plt.show()
 
 
