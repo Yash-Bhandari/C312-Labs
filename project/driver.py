@@ -29,7 +29,7 @@ def terminal():
 		arm.print_status()
 
 def draw():
-	svg = parse_svg('svg_files/face.svg')
+	svg = parse_svg('svg_files/duck.svg')
 	arm = Robot()
 	renderer = PhysicalRenderer(svg, arm)
 	# renderer = MatPlotLibRenderer(svg, in_3d=True)
@@ -38,7 +38,7 @@ def draw():
 		arm.dipPaint()
 		print('Rendering shape', shape)
 		shape.render_with(renderer)
-	arm.quit()
+	arm.goToStartingPose()
 	# renderer.show()
 
 if __name__ == "__main__":
