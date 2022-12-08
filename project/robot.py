@@ -12,13 +12,13 @@ class Robot():
         self.kit = ServoKit(channels=16)
 
         # == joint measurements (cm) == 
-        self.joints = [[4.05, 0, 6.75], [9, 0, 0], [-2.165, 0, 0.85],
-                [15.8, 0, 0], [1.825, 0, 0.85], [1.55, 0, -6.75]]
+        self.joints = [[4.05, 0, 6], [9, 0, 0], [-0.85, 0, 2.165],
+                     [15.8, 0, 0], [1.825, 0, 0.85], [1, -6.75, 0]]
 
         # joint v2 kinda sus
 
         # == set origin == 
-        self.origin = [-8.35, 0, 2.6]
+        self.origin = [-8.35, 0, 2.4] 
 
         # == servo joints ==  
         self.kit.servo[0].set_pulse_width_range(500, 2500) # Base
@@ -55,12 +55,12 @@ class Robot():
         """
         if physical:
             pose = self.kin.physicalToLogicalAngles(pose)
-        print("pose: ", pose)
         self.physical_angles = self.kin.logicalToPhysicalAngles(pose)
-        print("physical_angles: ", self.physical_angles)
         self.logical_angles = pose
         
         pose = [np.degrees(self.physical_angles[i]) for i in range(6)]
+
+        self.print_status()
 
         self.kit.servo[0].angle = pose[0]
         self.kit.servo[1].angle = pose[1]
