@@ -19,6 +19,7 @@ CANVAS_BR = [25, -14.5, ]
 CANVAS_FL = [6, 14.5, 0]
 CANVAS_FR = [6, -14.5, 0]
 
+STARTING_POSE_PHYSICAL = [1.570, 2.443, 2.094, 1.570, 2.792, 3.141] # ture acuator angles used to drive the model 
 
 
 @dataclass
