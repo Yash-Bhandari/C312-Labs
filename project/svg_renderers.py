@@ -116,6 +116,7 @@ class MatPlotLibRenderer(SVGRenderer):
 		}
 		if in_3d:
 			self.converter = ImageTo3D(CANVAS, svg)
+		self.ax = plt.axes(projection='3d') if in_3d else plt.axes()
 
 	def render_line(self, line: LineSVG):
 		points = self.np_renderer.render_line(line)
@@ -133,7 +134,7 @@ class MatPlotLibRenderer(SVGRenderer):
 
 	def render_points(self, points: np.ndarray):
 		if self.converter:
-			self.render_points_3d(points)
+			return self.render_points_3d(points)
 		dimension = int(max(self.svg.width, self.svg.height))
 		plt.xlim([0, dimension])
 		plt.ylim([0, dimension])
@@ -142,7 +143,7 @@ class MatPlotLibRenderer(SVGRenderer):
 
 	def render_points_3d(self, points: np.ndarray):
 		points = np.array([self.converter.image_to_3d(point) for point in points])
-		ax = plt.axes(projection='3d')
+		ax = self.ax
 		ax.plot3D(points[:,0], points[:,1], points[:,2], **self.render_args)
 		# set the x,y and z limits of the 3d plot
 		ax.set_xlim3d(0, self.converter.max_x)
@@ -151,11 +152,11 @@ class MatPlotLibRenderer(SVGRenderer):
 		ax.set_xlabel('X')
 		ax.set_ylabel('Y')
 		ax.set_zlabel('Z')
-		plt.show()
 		
 
 	def show(self):
-		plt.gca().invert_yaxis()
+		if not self.converter:
+			plt.gca().invert_yaxis()
 		plt.show()
 
 
@@ -181,13 +182,13 @@ class ImageTo3D:
 		matrix = np.zeros((3, 3))
 		slant = self.canvas.slant
 		matrix[:,2] = np.array([self.canvas.x_offset, self.canvas.y_offset, self.canvas.z_offset])
-		matrix[0,1] = 1
-		matrix[1,0] = np.cos(slant)
-		matrix[2,0] = np.sin(slant)
+		matrix[1,0] = 1
+		matrix[0,1] = np.cos(slant)
+		matrix[2,1] = np.sin(slant)
 		# matrix = np.array([
-		# 	[0            , 1, x_offset],
-		# 	[np.cos(slant), 0, y_offset],
-		# 	[np.sin(slant), 0, z_offset],
+		# 	[1, 0         , x_offset],
+		# 	[0, cos(slant), y_offset],
+		# 	[0, sin(slant)         , z_offset],
 		# ])
 		print(matrix)
 		return matrix
@@ -200,6 +201,7 @@ class ImageTo3D:
 		scaled = point.copy()
 		scaled[0] = scaled[0] / self.svg.width
 		scaled[1] = scaled[1] / self.svg.height
+		scaled = 1 - scaled
 		out = self.matrix[:,:2] @ scaled
 		out[0] *= self.canvas.height * np.cos(self.canvas.slant)
 		out[1] *= self.canvas.width
