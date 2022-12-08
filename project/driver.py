@@ -1,6 +1,6 @@
 from robot import Robot
 from svg import parse_svg
-from svg_renderers import PhysicalRenderer
+from svg_renderers import PhysicalRenderer, MatPlotLibRenderer
 import numpy as np
 import time
 
@@ -31,13 +31,13 @@ def terminal():
 
 def draw():
 	svg = parse_svg('svg_files/face.svg')
-	arm = Robot()
-	renderer = PhysicalRenderer(svg, arm)
-	# renderer = MatPlotLibRenderer(svg)
+	# arm = Robot()
+	# renderer = PhysicalRenderer(svg, arm)
+	renderer = MatPlotLibRenderer(svg, in_3d=True)
 	for shape in svg.shapes:
 		print('Rendering shape', shape)
 		shape.render_with(renderer)
-	# renderer.show()
+	renderer.show()
 
 if __name__ == "__main__":
 	draw()

@@ -107,13 +107,15 @@ class MatPlotLibRenderer(SVGRenderer):
 	This renderer draws a image using matplotlib
 	"""
 
-	def __init__(self, svg: SVG, **kwargs):
+	def __init__(self, svg: SVG, in_3d=False, **kwargs):
 		super().__init__(svg)
 		self.np_renderer = NumpyRenderer(svg)
 		self.render_args = {
 			'marker': '.',
 			'linestyle': 'None'
 		}
+		if in_3d:
+			self.converter = ImageTo3D(CANVAS, svg)
 
 	def render_line(self, line: LineSVG):
 		points = self.np_renderer.render_line(line)
@@ -130,11 +132,27 @@ class MatPlotLibRenderer(SVGRenderer):
 		self.render_points(points)
 
 	def render_points(self, points: np.ndarray):
+		if self.converter:
+			self.render_points_3d(points)
 		dimension = int(max(self.svg.width, self.svg.height))
 		plt.xlim([0, dimension])
 		plt.ylim([0, dimension])
 		plt.plot(points[:, 0], points[:, 1], **self.render_args)
 		plt.gca().set_aspect('equal', adjustable='box')
+
+	def render_points_3d(self, points: np.ndarray):
+		points = np.array([self.converter.image_to_3d(point) for point in points])
+		ax = plt.axes(projection='3d')
+		ax.plot3D(points[:,0], points[:,1], points[:,2], **self.render_args)
+		# set the x,y and z limits of the 3d plot
+		ax.set_xlim3d(0, self.converter.max_x)
+		ax.set_ylim3d(-20, 20)
+		ax.set_zlim3d(0, self.converter.max_z)
+		ax.set_xlabel('X')
+		ax.set_ylabel('Y')
+		ax.set_zlabel('Z')
+		plt.show()
+		
 
 	def show(self):
 		plt.gca().invert_yaxis()
@@ -148,6 +166,9 @@ class ImageTo3D:
 		self.svg = svg
 		self.translation = np.array([self.canvas.x_offset, self.canvas.y_offset, self.canvas.z_offset])
 		self.matrix = self.projection_matrix()
+		self.max_x = self.canvas.height * np.cos(self.canvas.slant)
+		self.max_y = self.canvas.width
+		self.max_z = self.canvas.height * np.sin(self.canvas.slant)
 
 	def projection_matrix(self):
 		"""
@@ -168,6 +189,7 @@ class ImageTo3D:
 		# 	[np.cos(slant), 0, y_offset],
 		# 	[np.sin(slant), 0, z_offset],
 		# ])
+		print(matrix)
 		return matrix
 
 	def image_to_3d(self, point: np.ndarray):
