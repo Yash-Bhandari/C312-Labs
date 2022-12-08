@@ -1,5 +1,6 @@
 import numpy as np 
 from time import *
+import config
 try:
     from adafruit_servokit import ServoKit
 except ImportError:
@@ -12,13 +13,11 @@ class Robot():
         self.kit = ServoKit(channels=16)
 
         # == joint measurements (cm) == 
-        self.joints = [[4.05, 0, 6], [9, 0, 0], [-0.85, 0, 2.165],
-                     [15.8, 0, 0], [1.825, 0, 0.85], [1, -6.75, 0]]
-
+        self.joints = config.JOINTS
         # joint v2 kinda sus
 
         # == set origin == 
-        self.origin = [-8.35, 0, 2.4] 
+        self.origin = config.WORLD
 
         # == servo joints ==  
         self.kit.servo[0].set_pulse_width_range(500, 2500) # Base
@@ -32,7 +31,7 @@ class Robot():
         self.kin = ForwardKinematics(self.joints, self.origin)
         
         # == move to start postion == 
-        self.physical_angles = [1.570, 2.443, 2.094, 1.570, 2.792, 3.141] # ture acuator angles used to drive the model 
+        self.physical_angles = [1.570, 2.443, 2.094, 1.71042, 1.274, 1.48353] # ture acuator angles used to drive the model 
         self.logical_angles = self.kin.physicalToLogicalAngles(self.physical_angles) # the angles used in the serial linkage model
 
         self.move2pose(self.logical_angles)
