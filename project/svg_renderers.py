@@ -116,6 +116,8 @@ class MatPlotLibRenderer(SVGRenderer):
 		}
 		if in_3d:
 			self.converter = ImageTo3D(CANVAS, svg)
+		else:
+			self.converter = None
 		self.ax = plt.axes(projection='3d') if in_3d else plt.axes()
 
 	def render_line(self, line: LineSVG):
