@@ -3,7 +3,7 @@ WORLD = [-8.35, 0, 2.4]
 
 # == joint measurements (cm) == 
 JOINTS = [[4.05, 0, 6], [9, 0, 0], [-0.85, 0, 2.165],
-        [15.8, 0, 0], [2, 0, 1], [0.8, 0, -6.5]]
+        [15.8, 0, 0], [2, 0, 1], [0.8, 0, -7.5]]
 
 # == cup coordinates (cm) == 
 L_CUP_0 = [-3.1, 14.2, -5.7]
@@ -35,4 +35,8 @@ class CanvasDims:
 	slant: float # degrees
 
 
-CANVAS = CanvasDims(24, 20.8, 6, -14.5, .2, 0.4904375)
+closest_peg = CanvasDims(15, 15, 9, -10, 3, 0.565) # 32 degrees
+
+# CANVAS = CanvasDims(15, 15, 9, -10, 3, 0.565) # 32 degrees
+
+CANVAS = closest_peg

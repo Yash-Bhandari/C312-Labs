@@ -30,14 +30,28 @@ class Robot():
         # == forward kinematics == 
         self.kin = ForwardKinematics(self.joints, self.origin)
         
-        # == move to start postion == 
-        self.physical_angles = [1.570, 2.443, 2.094, 1.71042, 1.8, 1.48353] # ture acuator angles used to drive the model 
-        self.logical_angles = self.kin.physicalToLogicalAngles(self.physical_angles) # the angles used in the serial linkage model
-
-        self.move2pose(self.logical_angles)
+        self.goToStartingPose()
         #self.move2pose([90, 140, 120, 90, 160, 180])
         print('Robot is ready!')
         sleep(1)
+
+    def goToStartingPose(self):
+        # == move to start postion == 
+        self.physical_angles = [1.570, 2.443, 2.094, 1.71042, 1.8, 1.48353] # ture acuator angles used to drive the model 
+        self.logical_angles = self.kin.physicalToLogicalAngles(self.physical_angles) # the angles used in the serial linkage model
+        self.move2pose(self.logical_angles)
+        sleep(0.5)
+
+    def dipPaint(self):
+        moves = [[160, 116, 132, 90, 75, 95], [157, 120, 170, 90, 120, 95], [157, 90, 180, 90, 120, 95]]
+        for move in moves:
+            angles = np.radians(np.array(move))
+            self.move2pose(angles, physical=True)
+        sleep(1)
+        for move in reversed(moves):
+            angles = np.radians(np.array(move))
+            self.move2pose(angles, physical=True)
+        self.goToStartingPose()
 
 
     def stopRobot(self):
@@ -67,6 +81,7 @@ class Robot():
         self.kit.servo[3].angle = pose[3]
         self.kit.servo[4].angle = pose[4]
         self.kit.servo[5].angle = pose[5]
+        sleep(0.4)
 
     def move2location(self, location):
         """Move robot to a specified location"""

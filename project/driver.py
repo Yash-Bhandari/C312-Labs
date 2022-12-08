@@ -26,7 +26,6 @@ def terminal():
 		else:
 			print("Invalid command")
 			continue
-		time.sleep(3)
 		arm.print_status()
 
 def draw():
@@ -35,8 +34,11 @@ def draw():
 	renderer = PhysicalRenderer(svg, arm)
 	# renderer = MatPlotLibRenderer(svg, in_3d=True)
 	for shape in svg.shapes:
+		arm.goToStartingPose()
+		arm.dipPaint()
 		print('Rendering shape', shape)
 		shape.render_with(renderer)
+	arm.quit()
 	# renderer.show()
 
 if __name__ == "__main__":
