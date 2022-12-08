@@ -114,23 +114,8 @@ class ForwardKinematics():
 
         return physical_angles
 
-    def jointLimitsLogical(self):
-        """
-        Finds the lower and upper bounds of the logical angles
-        The physical angles can go from 0 to 2pi
-
-        output:
-            - bounds: 2x6 array where the first row is the lower bounds and the
-            second row is the upper bounds
-        """
-        lower = self.physicalToLogicalAngles(np.zeros(6))
-        upper = self.physicalToLogicalAngles(np.ones(6)*np.pi)
-        bounds = np.array([lower, upper])
-        bounds = np.sort(bounds, axis=0)
-        bounds[0,2] = -10
-        bounds[1,2] = 10
-        bounds[0,:] += 0.01
-        bounds[1,:] -= 0.01
+    def jointLimitsPhysical(self):
+        bounds 
         return bounds
 
     def physicalToLogicalAngles(self, physical_angles):
@@ -165,9 +150,9 @@ class ForwardKinematics():
         elif joint == 3:
             return theta + 1.71042
         elif joint == 4:
-            return theta + 2.18166
+            return theta + 1.309
         elif joint == 5:
-            return theta + np.pi
+            return theta 
             
         return theta
 
@@ -183,9 +168,9 @@ class ForwardKinematics():
         elif joint == 3:
             return theta - 1.71042
         elif joint == 4:
-            return theta - 2.18166
+            return theta - 1.309
         elif joint == 5:
-            return theta - np.pi
+            return theta 
             
         return theta
 
