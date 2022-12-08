@@ -26,16 +26,18 @@ class NumpyRenderer(SVGRenderer):
 	def render_line(self, shape: LineSVG):
 		xs = np.linspace(shape.x1, shape.x2, self.num_points // 3)
 		ys = np.linspace(shape.y1, shape.y2, self.num_points // 3)
-		return np.stack((xs, ys), axis=1)
+		points = np.stack((xs, ys), axis=1)
+		return self.prune_points(points)
 
 	def render_circle(self, shape: CircleSVG):
 		theta = np.linspace(0, 2 * pi, self.num_points)
 		xs = np.cos(theta) * shape.radius + shape.center_x
 		ys = np.sin(theta) * shape.radius + shape.center_y
-		return np.stack((xs, ys), axis=1)
+		points = np.stack((xs, ys), axis=1)
+		return self.prune_points(points)
 
-	def cubic_bezier(self, control_xs, control_ys):
-		t = np.linspace(0, 1, 20) # paramter 
+	def cubic_bezier(self, control_xs, control_ys, num_points=80):
+		t = np.linspace(0, 1, num_points) # parameter 
 		t1 = (1-t)**3
 		t2 = 3*t*(1-t)**2
 		t3 = 3*t**2*(1-t)
@@ -83,7 +85,22 @@ class NumpyRenderer(SVGRenderer):
 			last_position = position
 			position = points[-1]
 			last_command = command
+		points = self.prune_points(points)
 		return points
+
+	def prune_points(self, points, distance_threshold = 20):
+		"""
+		Removes points that are too close together
+		"""
+		out = []
+		out.append(points[0])
+		for i in range(1, len(points)-1):
+			if np.linalg.norm(points[i] - out[-1]) < distance_threshold:
+				continue
+			else:
+				out.append(points[i])
+		out.append(points[-1])
+		return np.array(out)
 
 class MatPlotLibRenderer(SVGRenderer):
 	"""
