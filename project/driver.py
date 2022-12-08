@@ -40,4 +40,4 @@ def draw():
 	# renderer.show()
 
 if __name__ == "__main__":
-	terminal()
+	draw()

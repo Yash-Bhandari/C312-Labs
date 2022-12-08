@@ -89,7 +89,6 @@ class ForwardKinematics():
         result = H @ np.array([0,0,0,1]).T
         return result[:3]
 
-    
 
     def logicalToPhysicalAngles(self, logical_angles):
         """
@@ -114,9 +113,6 @@ class ForwardKinematics():
 
         return physical_angles
 
-    def jointLimitsPhysical(self):
-        bounds 
-        return bounds
 
     def physicalToLogicalAngles(self, physical_angles):
         """
@@ -173,6 +169,41 @@ class ForwardKinematics():
             return theta 
             
         return theta
+
+    def is_valid(self, physical_angles):
+        logical = self.physicalToLogicalAngles(physical_angles)
+        beta = self.quadrilateralBeta_arbitrary(logical[2])
+        if beta < np.radians(5):
+            return False
+        return True
+
+    def jointLimitsPhysical(self, physical_angles):
+        """calulates the upper and lower bounds of the servos"""
+
+        joints1 = physical_angles[1]
+        bounds = np.ones((6, 2))
+
+        delta = np.radians(56.5-24.6)
+        little_wiggle = np.radians(38)
+        big_wiggle = np.radians(24)
+
+        upper = np.pi
+        lower = 0
+
+        if joints1+little_wiggle > (np.pi - delta):
+            upper = np.pi - (joints1 - (np.pi-delta)) - little_wiggle
+
+        else:
+            lower = (np.pi-delta) - joints1 + big_wiggle
+
+        bounds[0] = [0, np.pi]
+        bounds[1] = [0, np.pi]
+        bounds[2] = [lower, upper]
+        bounds[3] = [0, np.pi]
+        bounds[4] = [0, np.pi]
+        bounds[5] = [0, np.pi]
+
+        return bounds
 
 
     def quadrilateralGamma(self, beta):

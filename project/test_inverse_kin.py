@@ -35,3 +35,9 @@ def test_pose_for_location(goal):
 	bounds = kin.jointLimitsLogical()
 	assert (pose >= bounds[0,:]).all()
 	assert (pose <= bounds[1,:]).all()
+
+def test_is_valid():
+	kin = ForwardKinematics(JOINTS, ORIGIN)
+	angles = [0, 180, 180, 0, 0, 0]
+	physical = np.array(np.radians(angles))
+	assert not kin.is_valid(physical)
