@@ -16,6 +16,7 @@ kin = ForwardKinematics(joints, origin)
 
 
 physical_angles = [90, 150, 140, 98, 75, 0] # true acuator angles used to drive the model 
+physical_angles = [90, 150, 140, 98, 75, 0]
 
 physical_angles = [np.radians(i) for i in physical_angles]
 
